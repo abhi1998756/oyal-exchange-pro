@@ -4,9 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ROYAL EXCHANGE PRO</title>
-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
 <style>
 *{box-sizing:border-box}
 body{margin:0;background:#080b12;color:white;font-family:Arial}
@@ -28,10 +26,11 @@ th{color:#e6bd58}
 .tablewrap{overflow-x:auto}
 .hidden{display:none}
 .small{color:#aaa;font-size:13px}
+.message{color:#e6bd58;white-space:pre-wrap}
 </style>
 </head>
-
 <body>
+
 <header>
 <h1>ROYAL EXCHANGE PRO</h1>
 <p>ULTIMATE EXCHANGE MANAGEMENT SYSTEM</p>
@@ -40,11 +39,11 @@ th{color:#e6bd58}
 <main>
 <section id="login" class="card">
 <h2>Admin Login</h2>
-<p class="small">Demo preview only</p>
-<input id="username" placeholder="Admin username">
-<input id="password" type="password" placeholder="Password">
-<button onclick="login()">Login</button>
-<p id="message"></p>
+<p class="small">Secure Supabase authentication</p>
+<input id="email" type="email" placeholder="Admin email address">
+<input id="password" type="password" placeholder="Admin password">
+<button id="loginButton" onclick="login()">Login</button>
+<p id="message" class="message"></p>
 </section>
 
 <section id="dashboard" class="hidden">
@@ -53,7 +52,7 @@ th{color:#e6bd58}
 <div class="nav">
 <button onclick="showPage('home')">Dashboard</button>
 <button onclick="showPage('users')">Users</button>
-<button onclick="showPage('register')">Registration Preview</button>
+<button onclick="showPage('register')">Registration Setup</button>
 <button onclick="logout()">Logout</button>
 </div>
 </div>
@@ -62,87 +61,103 @@ th{color:#e6bd58}
 <div class="statgrid">
 <div class="stat">Total Users<div class="number" id="total">0</div></div>
 <div class="stat">Active Users<div class="number" id="active">0</div></div>
-<div class="stat">Pending Verification<div class="number">0</div></div>
-<div class="stat">System Status<div class="number">Demo</div></div>
+<div class="stat">Pending Verification<div class="number" id="pending">0</div></div>
+<div class="stat">System Status<div class="number" id="systemStatus">Connected</div></div>
 </div>
-
 <div class="card">
 <h2>System Information</h2>
 <p>ROYAL EXCHANGE PRO</p>
-<p id="connectionStatus" class="small">Checking database connection...</p>
-<p class="small">OTP and permanent user registration setup pending.</p>
+<p id="connectionStatus" class="small">Database connected.</p>
 </div>
 </div>
 
 <div id="users" class="card hidden">
 <h2>User Management</h2>
-<input id="search" placeholder="Search user or mobile number" oninput="renderUsers()">
+<button onclick="loadUsers()">Refresh Users</button>
+<input id="search" placeholder="Search name or mobile" oninput="renderUsers()">
 <div class="tablewrap">
 <table>
-<thead>
-<tr><th>Name</th><th>Mobile</th><th>Status</th></tr>
-</thead>
+<thead><tr><th>Name</th><th>Mobile</th><th>Status</th></tr></thead>
 <tbody id="userRows"></tbody>
 </table>
 </div>
-<p id="empty" class="small">No users registered yet.</p>
+<p id="empty" class="small">No users found.</p>
+<p id="usersMessage" class="message"></p>
 </div>
 
 <div id="register" class="card hidden">
-<h2>User Registration Preview</h2>
-<input id="newName" placeholder="Full Name">
-<input id="newMobile" placeholder="Mobile Number">
-<button onclick="addUser()">Add Demo User</button>
-<p id="registerMessage" class="small"></p>
-<p class="small">OTP verification will be connected in the next step.</p>
+<h2>Registration Setup</h2>
+<p>User registration and OTP verification are not connected yet.</p>
+<p class="small">The next step is to configure a secure registration process. No demo records will be saved as real users.</p>
 </div>
 </section>
 </main>
 
 <script>
-const SUPABASE_URL =
-"https://lsuscsonxyomusbpzxxt.supabase.co";
+const SUPABASE_URL = "https://lsuscsonxyomusbpzxxt.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_p2Lhw8xmGstxTUq2S-T-rg_5licR";
 
-const SUPABASE_PUBLISHABLE_KEY =
-"sb_publishable_p2Lhw8xmGstxTUq2S-T-rg_5licR";
+const supabaseClient = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_PUBLISHABLE_KEY
+);
 
-let supabaseClient = null;
 let users = [];
 
-try {
-  if (window.supabase && window.supabase.createClient) {
-    supabaseClient = window.supabase.createClient(
-      SUPABASE_URL,
-      SUPABASE_PUBLISHABLE_KEY
-    );
-    document.getElementById("connectionStatus").textContent =
-      "Supabase client initialized. Database access policies pending.";
-  } else {
-    document.getElementById("connectionStatus").textContent =
-      "Supabase library could not load. Check internet connection.";
+async function login(){
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value;
+  const message = document.getElementById("message");
+  const button = document.getElementById("loginButton");
+
+  if(!email || !password){
+    message.textContent = "Enter your email and password.";
+    return;
   }
-} catch (error) {
-  document.getElementById("connectionStatus").textContent =
-    "Supabase setup error. Check project settings.";
-}
 
-function login(){
-  let u=document.getElementById("username").value;
-  let p=document.getElementById("password").value;
+  button.disabled = true;
+  message.textContent = "Signing in...";
 
-  if(u==="admin" && p==="demo123"){
+  try {
+    const {data, error} = await supabaseClient.auth.signInWithPassword({
+      email: email,
+      password: password
+    });
+
+    if(error) throw error;
+
+    const {data:isAdmin, error:adminError} =
+      await supabaseClient.rpc("is_admin");
+
+    if(adminError) throw adminError;
+
+    if(isAdmin !== true){
+      await supabaseClient.auth.signOut();
+      throw new Error("This account is not an authorized admin.");
+    }
+
     document.getElementById("login").classList.add("hidden");
     document.getElementById("dashboard").classList.remove("hidden");
-    renderUsers();
-  }else{
-    document.getElementById("message").textContent =
-      "Demo login: admin / demo123";
+    document.getElementById("connectionStatus").textContent =
+      "Supabase connected. Admin authenticated.";
+
+    message.textContent = "";
+    await loadUsers();
+
+  } catch(error) {
+    message.textContent = error.message || "Login failed.";
+  } finally {
+    button.disabled = false;
   }
 }
 
-function logout(){
+async function logout(){
+  await supabaseClient.auth.signOut();
+  users = [];
   document.getElementById("dashboard").classList.add("hidden");
   document.getElementById("login").classList.remove("hidden");
+  document.getElementById("password").value = "";
+  document.getElementById("message").textContent = "Logged out.";
 }
 
 function showPage(page){
@@ -150,48 +165,64 @@ function showPage(page){
     document.getElementById(id).classList.add("hidden");
   });
   document.getElementById(page).classList.remove("hidden");
-  renderUsers();
+
+  if(page === "users") loadUsers();
 }
 
-function addUser(){
-  let name=document.getElementById("newName").value.trim();
-  let mobile=document.getElementById("newMobile").value.trim();
+async function loadUsers(){
+  const message = document.getElementById("usersMessage");
+  message.textContent = "Loading users...";
 
-  if(!name || !/^[0-9]{10}$/.test(mobile)){
-    document.getElementById("registerMessage").textContent =
-      "Enter name and valid 10-digit mobile number.";
-    return;
+  try {
+    const {data, error} = await supabaseClient
+      .from("users")
+      .select("full_name,mobile,status")
+      .order("created_at", {ascending:false});
+
+    if(error) throw error;
+
+    users = data || [];
+    renderUsers();
+
+    document.getElementById("total").textContent = users.length;
+    document.getElementById("active").textContent =
+      users.filter(u => (u.status || "").toLowerCase() === "active").length;
+    document.getElementById("pending").textContent =
+      users.filter(u => (u.status || "").toLowerCase() === "pending").length;
+
+    document.getElementById("systemStatus").textContent = "Connected";
+    document.getElementById("connectionStatus").textContent =
+      "Database connected. User list refreshed.";
+    message.textContent = "";
+
+  } catch(error) {
+    message.textContent = "Could not load users: " + error.message;
+    document.getElementById("systemStatus").textContent = "Error";
   }
-
-  users.push({name,mobile,status:"Demo"});
-
-  document.getElementById("newName").value="";
-  document.getElementById("newMobile").value="";
-  document.getElementById("registerMessage").textContent =
-    "Demo user added in this browser session.";
-  renderUsers();
 }
 
 function renderUsers(){
-  let q=(document.getElementById("search")?.value||"").toLowerCase();
+  const q = (document.getElementById("search")?.value || "").toLowerCase();
 
-  let filtered=users.filter(u=>
-    u.name.toLowerCase().includes(q)||u.mobile.includes(q)
+  const filtered = users.filter(u =>
+    (u.full_name || "").toLowerCase().includes(q) ||
+    (u.mobile || "").includes(q)
   );
 
-  document.getElementById("userRows").innerHTML=filtered.map(u=>
-    `<tr><td>${safe(u.name)}</td><td>${safe(u.mobile)}</td><td>${u.status}</td></tr>`
+  document.getElementById("userRows").innerHTML = filtered.map(u =>
+    `<tr>
+      <td>${safe(u.full_name || "")}</td>
+      <td>${safe(u.mobile || "")}</td>
+      <td>${safe(u.status || "")}</td>
+    </tr>`
   ).join("");
 
   document.getElementById("empty").style.display =
     filtered.length ? "none" : "block";
-
-  document.getElementById("total").textContent=users.length;
-  document.getElementById("active").textContent=users.length;
 }
 
-function safe(s){
-  return s.replace(/[&<>"']/g,c=>({
+function safe(value){
+  return String(value).replace(/[&<>"']/g,c=>({
     "&":"&amp;",
     "<":"&lt;",
     ">":"&gt;",
