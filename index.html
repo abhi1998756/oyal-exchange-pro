@@ -1,10 +1,12 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ROYAL EXCHANGE PRO</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <style>
 *{box-sizing:border-box}
 body{margin:0;background:#080b12;color:white;font-family:Arial}
@@ -28,6 +30,7 @@ th{color:#e6bd58}
 .small{color:#aaa;font-size:13px}
 </style>
 </head>
+
 <body>
 <header>
 <h1>ROYAL EXCHANGE PRO</h1>
@@ -62,10 +65,12 @@ th{color:#e6bd58}
 <div class="stat">Pending Verification<div class="number">0</div></div>
 <div class="stat">System Status<div class="number">Demo</div></div>
 </div>
+
 <div class="card">
 <h2>System Information</h2>
-<p>ROYAL EXCHANGE PRO is running in demo mode.</p>
-<p class="small">No real-money transactions or deposits are enabled.</p>
+<p>ROYAL EXCHANGE PRO</p>
+<p id="connectionStatus" class="small">Checking database connection...</p>
+<p class="small">OTP and permanent user registration setup pending.</p>
 </div>
 </div>
 
@@ -74,7 +79,9 @@ th{color:#e6bd58}
 <input id="search" placeholder="Search user or mobile number" oninput="renderUsers()">
 <div class="tablewrap">
 <table>
-<thead><tr><th>Name</th><th>Mobile</th><th>Status</th></tr></thead>
+<thead>
+<tr><th>Name</th><th>Mobile</th><th>Status</th></tr>
+</thead>
 <tbody id="userRows"></tbody>
 </table>
 </div>
@@ -87,70 +94,110 @@ th{color:#e6bd58}
 <input id="newMobile" placeholder="Mobile Number">
 <button onclick="addUser()">Add Demo User</button>
 <p id="registerMessage" class="small"></p>
-<p class="small">OTP verification will be connected later.</p>
+<p class="small">OTP verification will be connected in the next step.</p>
 </div>
 </section>
 </main>
 
 <script>
-let users=[];
+const SUPABASE_URL =
+"https://lsuscsonxyomusbpzxxt.supabase.co";
+
+const SUPABASE_PUBLISHABLE_KEY =
+"sb_publishable_p2Lhw8xmGstxTUq2S-T-rg_5licR";
+
+let supabaseClient = null;
+let users = [];
+
+try {
+  if (window.supabase && window.supabase.createClient) {
+    supabaseClient = window.supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_PUBLISHABLE_KEY
+    );
+    document.getElementById("connectionStatus").textContent =
+      "Supabase client initialized. Database access policies pending.";
+  } else {
+    document.getElementById("connectionStatus").textContent =
+      "Supabase library could not load. Check internet connection.";
+  }
+} catch (error) {
+  document.getElementById("connectionStatus").textContent =
+    "Supabase setup error. Check project settings.";
+}
 
 function login(){
-let u=document.getElementById("username").value;
-let p=document.getElementById("password").value;
-if(u==="admin" && p==="demo123"){
-document.getElementById("login").classList.add("hidden");
-document.getElementById("dashboard").classList.remove("hidden");
-renderUsers();
-}else{
-document.getElementById("message").textContent="Demo login: admin / demo123";
-}
+  let u=document.getElementById("username").value;
+  let p=document.getElementById("password").value;
+
+  if(u==="admin" && p==="demo123"){
+    document.getElementById("login").classList.add("hidden");
+    document.getElementById("dashboard").classList.remove("hidden");
+    renderUsers();
+  }else{
+    document.getElementById("message").textContent =
+      "Demo login: admin / demo123";
+  }
 }
 
 function logout(){
-document.getElementById("dashboard").classList.add("hidden");
-document.getElementById("login").classList.remove("hidden");
+  document.getElementById("dashboard").classList.add("hidden");
+  document.getElementById("login").classList.remove("hidden");
 }
 
 function showPage(page){
-["home","users","register"].forEach(id=>{
-document.getElementById(id).classList.add("hidden");
-});
-document.getElementById(page).classList.remove("hidden");
-renderUsers();
+  ["home","users","register"].forEach(id=>{
+    document.getElementById(id).classList.add("hidden");
+  });
+  document.getElementById(page).classList.remove("hidden");
+  renderUsers();
 }
 
 function addUser(){
-let name=document.getElementById("newName").value.trim();
-let mobile=document.getElementById("newMobile").value.trim();
-if(!name || !/^[0-9]{10}$/.test(mobile)){
-document.getElementById("registerMessage").textContent="Enter name and valid 10-digit mobile number.";
-return;
-}
-users.push({name,mobile,status:"Demo"});
-document.getElementById("newName").value="";
-document.getElementById("newMobile").value="";
-document.getElementById("registerMessage").textContent="Demo user added.";
-renderUsers();
+  let name=document.getElementById("newName").value.trim();
+  let mobile=document.getElementById("newMobile").value.trim();
+
+  if(!name || !/^[0-9]{10}$/.test(mobile)){
+    document.getElementById("registerMessage").textContent =
+      "Enter name and valid 10-digit mobile number.";
+    return;
+  }
+
+  users.push({name,mobile,status:"Demo"});
+
+  document.getElementById("newName").value="";
+  document.getElementById("newMobile").value="";
+  document.getElementById("registerMessage").textContent =
+    "Demo user added in this browser session.";
+  renderUsers();
 }
 
 function renderUsers(){
-let q=(document.getElementById("search")?.value||"").toLowerCase();
-let filtered=users.filter(u=>
-u.name.toLowerCase().includes(q)||u.mobile.includes(q)
-);
-document.getElementById("userRows").innerHTML=filtered.map(u=>
-`<tr><td>${safe(u.name)}</td><td>${safe(u.mobile)}</td><td>${u.status}</td></tr>`
-).join("");
-document.getElementById("empty").style.display=filtered.length?"none":"block";
-document.getElementById("total").textContent=users.length;
-document.getElementById("active").textContent=users.length;
+  let q=(document.getElementById("search")?.value||"").toLowerCase();
+
+  let filtered=users.filter(u=>
+    u.name.toLowerCase().includes(q)||u.mobile.includes(q)
+  );
+
+  document.getElementById("userRows").innerHTML=filtered.map(u=>
+    `<tr><td>${safe(u.name)}</td><td>${safe(u.mobile)}</td><td>${u.status}</td></tr>`
+  ).join("");
+
+  document.getElementById("empty").style.display =
+    filtered.length ? "none" : "block";
+
+  document.getElementById("total").textContent=users.length;
+  document.getElementById("active").textContent=users.length;
 }
 
 function safe(s){
-return s.replace(/[&<>"']/g,c=>({
-"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
-}[c]));
+  return s.replace(/[&<>"']/g,c=>({
+    "&":"&amp;",
+    "<":"&lt;",
+    ">":"&gt;",
+    '"':"&quot;",
+    "'":"&#39;"
+  }[c]));
 }
 </script>
 </body>
