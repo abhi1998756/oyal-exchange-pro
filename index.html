@@ -3,38 +3,29 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ROYAL EXCHANGE PRO</title>
 <style>
 *{box-sizing:border-box}
-body{
- margin:0;background:#080b12;color:#fff;
- font-family:Arial,sans-serif;
-}
-header{
- background:#151a25;padding:22px;
- border-bottom:2px solid #d4aa45;
-}
-h1{color:#e6bd58;margin:0}
-header p{color:#aaa;margin-bottom:0}
-main{padding:20px;max-width:900px;margin:auto}
-.card{
- background:#171e2b;padding:20px;
- border:1px solid #80652d;border-radius:12px;
- margin:15px 0;
-}
+body{margin:0;background:#080b12;color:white;font-family:Arial}
+header{background:#151a25;padding:18px;border-bottom:2px solid #d4aa45}
+h1{color:#e6bd58;margin:0;font-size:23px}
+header p{color:#aaa;margin:6px 0 0}
+main{max-width:1100px;margin:auto;padding:18px}
+.card{background:#171e2b;border:1px solid #80652d;border-radius:12px;padding:18px;margin:15px 0}
 h2{color:#e6bd58}
-.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+input{width:100%;padding:13px;margin:8px 0;border-radius:6px;border:1px solid #777;background:#101722;color:white}
+button{background:#c69b40;color:#111;border:0;padding:12px 17px;border-radius:7px;font-weight:bold;margin:5px;cursor:pointer}
+.nav{display:flex;flex-wrap:wrap;gap:5px}
+.statgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
 .stat{background:#222c3b;padding:18px;border-radius:9px}
-.number{font-size:26px;color:#e6bd58}
-button{
- background:#c69b40;color:#111;border:0;
- padding:12px 18px;border-radius:7px;font-weight:bold;
-}
-input{
- display:block;width:100%;padding:12px;margin:10px 0;
- border-radius:6px;border:1px solid #777;
-}
+.number{font-size:25px;color:#e6bd58;margin-top:8px}
+table{width:100%;border-collapse:collapse;min-width:500px}
+td,th{padding:12px;border-bottom:1px solid #444;text-align:left}
+th{color:#e6bd58}
+.tablewrap{overflow-x:auto}
+.hidden{display:none}
+.small{color:#aaa;font-size:13px}
 </style>
 </head>
 <body>
@@ -42,38 +33,124 @@ input{
 <h1>ROYAL EXCHANGE PRO</h1>
 <p>ULTIMATE EXCHANGE MANAGEMENT SYSTEM</p>
 </header>
+
 <main>
-<div class="card">
-<h2>Admin Demo Login</h2>
-<input id="username" placeholder="Enter demo username">
-<input id="password" type="password" placeholder="Enter demo password">
+<section id="login" class="card">
+<h2>Admin Login</h2>
+<p class="small">Demo preview only</p>
+<input id="username" placeholder="Admin username">
+<input id="password" type="password" placeholder="Password">
 <button onclick="login()">Login</button>
-<p id="message">Demo preview only</p>
-</div>
-<div id="dashboard" hidden>
+<p id="message"></p>
+</section>
+
+<section id="dashboard" class="hidden">
+<div class="card">
 <h2>Admin Dashboard</h2>
-<div class="grid">
-<div class="stat">Users<div class="number">0</div></div>
-<div class="stat">Markets<div class="number">0</div></div>
-<div class="stat">Deposits<div class="number">0</div></div>
-<div class="stat">Reports<div class="number">0</div></div>
+<div class="nav">
+<button onclick="showPage('home')">Dashboard</button>
+<button onclick="showPage('users')">Users</button>
+<button onclick="showPage('register')">Registration Preview</button>
+<button onclick="logout()">Logout</button>
+</div>
+</div>
+
+<div id="home">
+<div class="statgrid">
+<div class="stat">Total Users<div class="number" id="total">0</div></div>
+<div class="stat">Active Users<div class="number" id="active">0</div></div>
+<div class="stat">Pending Verification<div class="number">0</div></div>
+<div class="stat">System Status<div class="number">Demo</div></div>
 </div>
 <div class="card">
-<h2>System Status</h2>
-<p>Demo mode active. No real money or transactions.</p>
+<h2>System Information</h2>
+<p>ROYAL EXCHANGE PRO is running in demo mode.</p>
+<p class="small">No real-money transactions or deposits are enabled.</p>
 </div>
 </div>
+
+<div id="users" class="card hidden">
+<h2>User Management</h2>
+<input id="search" placeholder="Search user or mobile number" oninput="renderUsers()">
+<div class="tablewrap">
+<table>
+<thead><tr><th>Name</th><th>Mobile</th><th>Status</th></tr></thead>
+<tbody id="userRows"></tbody>
+</table>
+</div>
+<p id="empty" class="small">No users registered yet.</p>
+</div>
+
+<div id="register" class="card hidden">
+<h2>User Registration Preview</h2>
+<input id="newName" placeholder="Full Name">
+<input id="newMobile" placeholder="Mobile Number">
+<button onclick="addUser()">Add Demo User</button>
+<p id="registerMessage" class="small"></p>
+<p class="small">OTP verification will be connected later.</p>
+</div>
+</section>
 </main>
+
 <script>
+let users=[];
+
 function login(){
-const u=document.getElementById("username").value;
-const p=document.getElementById("password").value;
+let u=document.getElementById("username").value;
+let p=document.getElementById("password").value;
 if(u==="admin" && p==="demo123"){
-document.getElementById("dashboard").hidden=false;
-document.getElementById("message").textContent="Demo login successful";
+document.getElementById("login").classList.add("hidden");
+document.getElementById("dashboard").classList.remove("hidden");
+renderUsers();
 }else{
-document.getElementById("message").textContent="Use admin / demo123";
+document.getElementById("message").textContent="Demo login: admin / demo123";
 }
+}
+
+function logout(){
+document.getElementById("dashboard").classList.add("hidden");
+document.getElementById("login").classList.remove("hidden");
+}
+
+function showPage(page){
+["home","users","register"].forEach(id=>{
+document.getElementById(id).classList.add("hidden");
+});
+document.getElementById(page).classList.remove("hidden");
+renderUsers();
+}
+
+function addUser(){
+let name=document.getElementById("newName").value.trim();
+let mobile=document.getElementById("newMobile").value.trim();
+if(!name || !/^[0-9]{10}$/.test(mobile)){
+document.getElementById("registerMessage").textContent="Enter name and valid 10-digit mobile number.";
+return;
+}
+users.push({name,mobile,status:"Demo"});
+document.getElementById("newName").value="";
+document.getElementById("newMobile").value="";
+document.getElementById("registerMessage").textContent="Demo user added.";
+renderUsers();
+}
+
+function renderUsers(){
+let q=(document.getElementById("search")?.value||"").toLowerCase();
+let filtered=users.filter(u=>
+u.name.toLowerCase().includes(q)||u.mobile.includes(q)
+);
+document.getElementById("userRows").innerHTML=filtered.map(u=>
+`<tr><td>${safe(u.name)}</td><td>${safe(u.mobile)}</td><td>${u.status}</td></tr>`
+).join("");
+document.getElementById("empty").style.display=filtered.length?"none":"block";
+document.getElementById("total").textContent=users.length;
+document.getElementById("active").textContent=users.length;
+}
+
+function safe(s){
+return s.replace(/[&<>"']/g,c=>({
+"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+}[c]));
 }
 </script>
 </body>
