@@ -31,21 +31,51 @@ th{color:#e6bd58}
 </style>
 </head>
 <body>
+
 <header>
 <h1>ROYAL EXCHANGE PRO</h1>
 <p>ULTIMATE EXCHANGE MANAGEMENT SYSTEM</p>
 </header>
+
 <main>
+
+<!-- ADMIN LOGIN -->
 <section id="login" class="card">
 <h2>Admin Login</h2>
 <p class="small">Secure Supabase authentication</p>
+
 <input id="email" type="email" placeholder="Admin email address">
 <input id="password" type="password" placeholder="Admin password">
+
 <button id="loginButton" onclick="login()">Login</button>
+<button onclick="showRegister()">New User? Register</button>
+
 <p id="message" class="message"></p>
 </section>
 
+<!-- USER REGISTRATION -->
+<section id="registration" class="card hidden">
+<h2>User Registration</h2>
+
+<input id="regName" type="text" placeholder="Full Name">
+<input id="regMobile" type="tel" maxlength="10" placeholder="10 Digit Mobile Number">
+<input id="regPassword" type="password" placeholder="Create Password (minimum 6 characters)">
+
+<button id="sendOtpButton" onclick="sendOTP()">Send OTP</button>
+
+<div id="otpArea" class="hidden">
+<p class="small">Enter the OTP received on your mobile.</p>
+<input id="regOtp" type="text" inputmode="numeric" maxlength="6" placeholder="Enter 6 digit OTP">
+<button id="verifyButton" onclick="verifyOTP()">Verify OTP & Register</button>
+</div>
+
+<button onclick="backToLogin()">Back to Login</button>
+<p id="regMessage" class="message"></p>
+</section>
+
+<!-- ADMIN DASHBOARD -->
 <section id="dashboard" class="hidden">
+
 <div class="card">
 <h2>Admin Dashboard</h2>
 <div class="nav">
@@ -63,6 +93,7 @@ th{color:#e6bd58}
 <div class="stat">Pending Verification<div class="number" id="pending">0</div></div>
 <div class="stat">System Status<div class="number" id="systemStatus">Connected</div></div>
 </div>
+
 <div class="card">
 <h2>System Information</h2>
 <p>ROYAL EXCHANGE PRO</p>
@@ -74,26 +105,32 @@ th{color:#e6bd58}
 <h2>User Management</h2>
 <button onclick="loadUsers()">Refresh Users</button>
 <input id="search" placeholder="Search name or mobile" oninput="renderUsers()">
+
 <div class="tablewrap">
 <table>
-<thead><tr><th>Name</th><th>Mobile</th><th>Status</th></tr></thead>
+<thead>
+<tr><th>Name</th><th>Mobile</th><th>Status</th></tr>
+</thead>
 <tbody id="userRows"></tbody>
 </table>
 </div>
+
 <p id="empty" class="small">No users found.</p>
 <p id="usersMessage" class="message"></p>
 </div>
 
 <div id="register" class="card hidden">
 <h2>Registration Setup</h2>
-<p>User registration and OTP verification are not connected yet.</p>
-<p class="small">Secure registration will be configured next.</p>
+<p>User registration is connected to Supabase Phone Authentication.</p>
+<p class="small">SMS provider configuration is required for OTP delivery.</p>
 </div>
+
 </section>
 </main>
 
 <script>
-const SUPABASE_URL = "https://lsuscsonxyomusbpzxxt.supabase.co";
+const SUPABASE_URL =
+"https://lsuscsonxyomusbpzxxt.supabase.co";
 
 const SUPABASE_PUBLISHABLE_KEY =
 "sb_publishable_p2Lhw8xmGstxTUq2S-T-rg_5licR3Hq";
@@ -104,7 +141,22 @@ const supabaseClient = window.supabase.createClient(
 );
 
 let users = [];
+let registrationPhone = "";
+let registrationName = "";
 
+// PAGE NAVIGATION
+function showRegister(){
+  document.getElementById("login").classList.add("hidden");
+  document.getElementById("registration").classList.remove("hidden");
+  document.getElementById("regMessage").textContent = "";
+}
+
+function backToLogin(){
+  document.getElementById("registration").classList.add("hidden");
+  document.getElementById("login").classList.remove("hidden");
+}
+
+// ADMIN LOGIN
 async function login(){
   const email = document.getElementById("email").value.trim();
   const password = document.getElementById("password").value;
@@ -120,7 +172,7 @@ async function login(){
   message.textContent = "Signing in...";
 
   try{
-    const {data,error} = await supabaseClient.auth.signInWithPassword({
+    const {error} = await supabaseClient.auth.signInWithPassword({
       email,
       password
     });
@@ -138,7 +190,9 @@ async function login(){
     }
 
     document.getElementById("login").classList.add("hidden");
+    document.getElementById("registration").classList.add("hidden");
     document.getElementById("dashboard").classList.remove("hidden");
+
     document.getElementById("connectionStatus").textContent =
       "Supabase connected. Admin authenticated.";
 
@@ -152,9 +206,120 @@ async function login(){
   }
 }
 
+// SEND OTP
+async function sendOTP(){
+  const name = document.getElementById("regName").value.trim();
+  const mobile = document.getElementById("regMobile").value.trim();
+  const password = document.getElementById("regPassword").value;
+  const message = document.getElementById("regMessage");
+  const button = document.getElementById("sendOtpButton");
+
+  if(!name || !mobile || !password){
+    message.textContent = "Please fill all fields.";
+    return;
+  }
+
+  if(!/^[6-9][0-9]{9}$/.test(mobile)){
+    message.textContent = "Enter a valid 10 digit Indian mobile number.";
+    return;
+  }
+
+  if(password.length < 6){
+    message.textContent = "Password must be at least 6 characters.";
+    return;
+  }
+
+  registrationPhone = "+91" + mobile;
+  registrationName = name;
+
+  button.disabled = true;
+  message.textContent = "Sending OTP...";
+
+  try{
+    const {data,error} = await supabaseClient.auth.signUp({
+      phone: registrationPhone,
+      password: password,
+      options:{
+        data:{
+          full_name: registrationName
+        }
+      }
+    });
+
+    if(error) throw error;
+
+    document.getElementById("otpArea").classList.remove("hidden");
+    message.textContent =
+      "OTP request submitted. Enter the OTP received on your mobile.";
+
+  }catch(error){
+    message.textContent = "Registration error: " + error.message;
+  }finally{
+    button.disabled = false;
+  }
+}
+
+// VERIFY OTP AND SAVE USER
+async function verifyOTP(){
+  const otp = document.getElementById("regOtp").value.trim();
+  const message = document.getElementById("regMessage");
+  const button = document.getElementById("verifyButton");
+
+  if(!/^[0-9]{6}$/.test(otp)){
+    message.textContent = "Enter a valid 6 digit OTP.";
+    return;
+  }
+
+  button.disabled = true;
+  message.textContent = "Verifying OTP...";
+
+  try{
+    const {data,error} = await supabaseClient.auth.verifyOtp({
+      phone: registrationPhone,
+      token: otp,
+      type: "sms"
+    });
+
+    if(error) throw error;
+
+    const user = data.user;
+
+    if(!user){
+      throw new Error("User verification failed.");
+    }
+
+    const {error:saveError} = await supabaseClient
+      .from("users")
+      .insert({
+        user_id: user.id,
+        full_name: registrationName,
+        mobile: registrationPhone,
+        status: "pending"
+      });
+
+    if(saveError) throw saveError;
+
+    message.textContent =
+      "Registration successful! Your account is pending admin approval.";
+
+    document.getElementById("otpArea").classList.add("hidden");
+    document.getElementById("regName").value = "";
+    document.getElementById("regMobile").value = "";
+    document.getElementById("regPassword").value = "";
+    document.getElementById("regOtp").value = "";
+
+  }catch(error){
+    message.textContent = "Verification error: " + error.message;
+  }finally{
+    button.disabled = false;
+  }
+}
+
+// ADMIN LOGOUT
 async function logout(){
   await supabaseClient.auth.signOut();
   users = [];
+
   document.getElementById("dashboard").classList.add("hidden");
   document.getElementById("login").classList.remove("hidden");
   document.getElementById("password").value = "";
@@ -165,10 +330,13 @@ function showPage(page){
   ["home","users","register"].forEach(id=>{
     document.getElementById(id).classList.add("hidden");
   });
+
   document.getElementById(page).classList.remove("hidden");
+
   if(page === "users") loadUsers();
 }
 
+// LOAD USERS
 async function loadUsers(){
   const message = document.getElementById("usersMessage");
   message.textContent = "Loading users...";
@@ -185,31 +353,35 @@ async function loadUsers(){
     renderUsers();
 
     document.getElementById("total").textContent = users.length;
+
     document.getElementById("active").textContent =
       users.filter(u=>(u.status||"").toLowerCase()==="active").length;
+
     document.getElementById("pending").textContent =
       users.filter(u=>(u.status||"").toLowerCase()==="pending").length;
 
     document.getElementById("systemStatus").textContent = "Connected";
     document.getElementById("connectionStatus").textContent =
       "Database connected. User list refreshed.";
+
     message.textContent = "";
 
   }catch(error){
-    message.textContent = "Could not load users: "+error.message;
+    message.textContent = "Could not load users: " + error.message;
     document.getElementById("systemStatus").textContent = "Error";
   }
 }
 
+// DISPLAY USERS
 function renderUsers(){
-  const q=(document.getElementById("search")?.value||"").toLowerCase();
+  const q = (document.getElementById("search")?.value || "").toLowerCase();
 
-  const filtered=users.filter(u=>
-    (u.full_name||"").toLowerCase().includes(q)||
+  const filtered = users.filter(u=>
+    (u.full_name||"").toLowerCase().includes(q) ||
     (u.mobile||"").includes(q)
   );
 
-  document.getElementById("userRows").innerHTML=filtered.map(u=>
+  document.getElementById("userRows").innerHTML = filtered.map(u=>
     `<tr>
       <td>${safe(u.full_name||"")}</td>
       <td>${safe(u.mobile||"")}</td>
@@ -231,5 +403,6 @@ function safe(value){
   }[c]));
 }
 </script>
+
 </body>
 </html>
