@@ -7,402 +7,207 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *{box-sizing:border-box}
-body{margin:0;background:#080b12;color:white;font-family:Arial}
+body{margin:0;background:#080b12;color:#fff;font-family:Arial,sans-serif}
 header{background:#151a25;padding:18px;border-bottom:2px solid #d4aa45}
-h1{color:#e6bd58;margin:0;font-size:23px}
-header p{color:#aaa;margin:6px 0 0}
-main{max-width:1100px;margin:auto;padding:18px}
-.card{background:#171e2b;border:1px solid #80652d;border-radius:12px;padding:18px;margin:15px 0}
-h2{color:#e6bd58}
-input{width:100%;padding:13px;margin:8px 0;border-radius:6px;border:1px solid #777;background:#101722;color:white}
-button{background:#c69b40;color:#111;border:0;padding:12px 17px;border-radius:7px;font-weight:bold;margin:5px;cursor:pointer}
+h1{color:#e5bd59;font-size:23px;margin:0}
+small{color:#aaa}
+main{max-width:1100px;margin:auto;padding:16px}
+.card{background:#151a25;border:1px solid #34313a;border-radius:12px;padding:18px;margin:12px 0}
+input,button{width:100%;padding:13px;margin:7px 0;border-radius:7px;border:1px solid #444;background:#090d16;color:white}
+button{background:#b58b32;color:#080b12;font-weight:bold;border:0;cursor:pointer}
+button.secondary{background:#303746;color:white}
+button.danger{background:#9d3434;color:white}
 button:disabled{opacity:.5}
-.nav{display:flex;flex-wrap:wrap;gap:5px}
-.statgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
-.stat{background:#222c3b;padding:18px;border-radius:9px}
-.number{font-size:25px;color:#e6bd58;margin-top:8px}
-table{width:100%;border-collapse:collapse;min-width:500px}
-td,th{padding:12px;border-bottom:1px solid #444;text-align:left}
-th{color:#e6bd58}
-.tablewrap{overflow-x:auto}
 .hidden{display:none}
-.small{color:#aaa;font-size:13px}
-.message{color:#e6bd58;white-space:pre-wrap}
+nav{display:flex;gap:7px;flex-wrap:wrap;margin:15px 0}
+nav button{width:auto;flex:1;min-width:100px}
+.stat{font-size:25px;color:#e5bd59;font-weight:bold}
+table{width:100%;border-collapse:collapse;min-width:650px}
+th,td{padding:10px;border-bottom:1px solid #34313a;text-align:left;font-size:13px}
+.tablewrap{overflow-x:auto}
+.gold{color:#e5bd59}
+.muted{color:#aaa}
+.status{color:#e5bd59}
+#message{white-space:pre-wrap;color:#e5bd59}
 </style>
 </head>
 <body>
-
 <header>
 <h1>ROYAL EXCHANGE PRO</h1>
-<p>ULTIMATE EXCHANGE MANAGEMENT SYSTEM</p>
+<small>ULTIMATE EXCHANGE MANAGEMENT SYSTEM</small>
 </header>
-
 <main>
+<div id="message"></div>
 
-<!-- ADMIN LOGIN -->
 <section id="login" class="card">
-<h2>Admin Login</h2>
-<p class="small">Secure Supabase authentication</p>
-
-<input id="email" type="email" placeholder="Admin email address">
-<input id="password" type="password" placeholder="Admin password">
-
-<button id="loginButton" onclick="login()">Login</button>
-<button onclick="showRegister()">New User? Register</button>
-
-<p id="message" class="message"></p>
+<h2 class="gold">Admin Login</h2>
+<input id="email" type="email" placeholder="Admin Email">
+<input id="password" type="password" placeholder="Password">
+<button onclick="loginAdmin()">LOGIN</button>
 </section>
 
-<!-- USER REGISTRATION -->
-<section id="registration" class="card hidden">
-<h2>User Registration</h2>
-
-<input id="regName" type="text" placeholder="Full Name">
-<input id="regMobile" type="tel" maxlength="10" placeholder="10 Digit Mobile Number">
-<input id="regPassword" type="password" placeholder="Create Password (minimum 6 characters)">
-
-<button id="sendOtpButton" onclick="sendOTP()">Send OTP</button>
-
-<div id="otpArea" class="hidden">
-<p class="small">Enter the OTP received on your mobile.</p>
-<input id="regOtp" type="text" inputmode="numeric" maxlength="6" placeholder="Enter 6 digit OTP">
-<button id="verifyButton" onclick="verifyOTP()">Verify OTP & Register</button>
-</div>
-
-<button onclick="backToLogin()">Back to Login</button>
-<p id="regMessage" class="message"></p>
-</section>
-
-<!-- ADMIN DASHBOARD -->
 <section id="dashboard" class="hidden">
+<nav>
+<button onclick="showTab('home')">Dashboard</button>
+<button onclick="showTab('users')">Users</button>
+<button onclick="showTab('audit')">Audit Logs</button>
+<button class="danger" onclick="logout()">Logout</button>
+</nav>
 
+<div id="home" class="tab">
 <div class="card">
-<h2>Admin Dashboard</h2>
-<div class="nav">
-<button onclick="showPage('home')">Dashboard</button>
-<button onclick="showPage('users')">Users</button>
-<button onclick="showPage('register')">Registration Setup</button>
-<button onclick="logout()">Logout</button>
+<h2 class="gold">Admin Dashboard</h2>
+<div>Total Users</div>
+<div class="stat" id="totalUsers">0</div>
+<div>Pending KYC</div>
+<div class="stat" id="pendingUsers">0</div>
+<div>Active Accounts</div>
+<div class="stat" id="activeUsers">0</div>
+<button onclick="loadUsers()">REFRESH DASHBOARD</button>
 </div>
 </div>
 
-<div id="home">
-<div class="statgrid">
-<div class="stat">Total Users<div class="number" id="total">0</div></div>
-<div class="stat">Active Users<div class="number" id="active">0</div></div>
-<div class="stat">Pending Verification<div class="number" id="pending">0</div></div>
-<div class="stat">System Status<div class="number" id="systemStatus">Connected</div></div>
-</div>
-
+<div id="users" class="tab hidden">
 <div class="card">
-<h2>System Information</h2>
-<p>ROYAL EXCHANGE PRO</p>
-<p id="connectionStatus" class="small">Checking connection...</p>
-</div>
-</div>
-
-<div id="users" class="card hidden">
-<h2>User Management</h2>
-<button onclick="loadUsers()">Refresh Users</button>
+<h2 class="gold">User Management</h2>
 <input id="search" placeholder="Search name or mobile" oninput="renderUsers()">
-
 <div class="tablewrap">
 <table>
-<thead>
-<tr><th>Name</th><th>Mobile</th><th>Status</th></tr>
-</thead>
+<thead><tr><th>Name</th><th>Mobile</th><th>KYC</th><th>Account</th><th>Actions</th></tr></thead>
 <tbody id="userRows"></tbody>
 </table>
 </div>
-
-<p id="empty" class="small">No users found.</p>
-<p id="usersMessage" class="message"></p>
+</div>
 </div>
 
-<div id="register" class="card hidden">
-<h2>Registration Setup</h2>
-<p>User registration is connected to Supabase Phone Authentication.</p>
-<p class="small">SMS provider configuration is required for OTP delivery.</p>
+<div id="audit" class="tab hidden">
+<div class="card">
+<h2 class="gold">Admin Audit History</h2>
+<div id="auditRows">Loading...</div>
 </div>
-
+</div>
 </section>
 </main>
 
 <script>
-const SUPABASE_URL =
-"https://lsuscsonxyomusbpzxxt.supabase.co";
+const SUPABASE_URL="https://lsuscsonxyomusbpzxxt.supabase.co";
+const SUPABASE_KEY="sb_publishable_p2Lhw8xmGstxTUq2S-T-rg_5licR3Hq";
+const db=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+let allUsers=[];
 
-const SUPABASE_PUBLISHABLE_KEY =
-"sb_publishable_p2Lhw8xmGstxTUq2S-T-rg_5licR3Hq";
+function msg(t){document.getElementById("message").textContent=t;}
 
-const supabaseClient = window.supabase.createClient(
-  SUPABASE_URL,
-  SUPABASE_PUBLISHABLE_KEY
-);
-
-let users = [];
-let registrationPhone = "";
-let registrationName = "";
-
-// PAGE NAVIGATION
-function showRegister(){
-  document.getElementById("login").classList.add("hidden");
-  document.getElementById("registration").classList.remove("hidden");
-  document.getElementById("regMessage").textContent = "";
+async function loginAdmin(){
+ const email=document.getElementById("email").value.trim();
+ const password=document.getElementById("password").value;
+ if(!email||!password)return msg("Email aur password bhariye.");
+ msg("Logging in...");
+ const {data,error}=await db.auth.signInWithPassword({email,password});
+ if(error)return msg(error.message);
+ const {data:admin,error:adminError}=await db.rpc("is_admin");
+ if(adminError||!admin){
+  await db.auth.signOut();
+  return msg("Admin access nahi mila.");
+ }
+ document.getElementById("login").classList.add("hidden");
+ document.getElementById("dashboard").classList.remove("hidden");
+ msg("Admin login successful.");
+ await loadUsers();
 }
 
-function backToLogin(){
-  document.getElementById("registration").classList.add("hidden");
-  document.getElementById("login").classList.remove("hidden");
-}
-
-// ADMIN LOGIN
-async function login(){
-  const email = document.getElementById("email").value.trim();
-  const password = document.getElementById("password").value;
-  const message = document.getElementById("message");
-  const button = document.getElementById("loginButton");
-
-  if(!email || !password){
-    message.textContent = "Enter email and password.";
-    return;
-  }
-
-  button.disabled = true;
-  message.textContent = "Signing in...";
-
-  try{
-    const {error} = await supabaseClient.auth.signInWithPassword({
-      email,
-      password
-    });
-
-    if(error) throw error;
-
-    const {data:isAdmin,error:adminError} =
-      await supabaseClient.rpc("is_admin");
-
-    if(adminError) throw adminError;
-
-    if(isAdmin !== true){
-      await supabaseClient.auth.signOut();
-      throw new Error("This account is not an authorized admin.");
-    }
-
-    document.getElementById("login").classList.add("hidden");
-    document.getElementById("registration").classList.add("hidden");
-    document.getElementById("dashboard").classList.remove("hidden");
-
-    document.getElementById("connectionStatus").textContent =
-      "Supabase connected. Admin authenticated.";
-
-    message.textContent = "";
-    await loadUsers();
-
-  }catch(error){
-    message.textContent = error.message || "Login failed.";
-  }finally{
-    button.disabled = false;
-  }
-}
-
-// SEND OTP
-async function sendOTP(){
-  const name = document.getElementById("regName").value.trim();
-  const mobile = document.getElementById("regMobile").value.trim();
-  const password = document.getElementById("regPassword").value;
-  const message = document.getElementById("regMessage");
-  const button = document.getElementById("sendOtpButton");
-
-  if(!name || !mobile || !password){
-    message.textContent = "Please fill all fields.";
-    return;
-  }
-
-  if(!/^[6-9][0-9]{9}$/.test(mobile)){
-    message.textContent = "Enter a valid 10 digit Indian mobile number.";
-    return;
-  }
-
-  if(password.length < 6){
-    message.textContent = "Password must be at least 6 characters.";
-    return;
-  }
-
-  registrationPhone = "+91" + mobile;
-  registrationName = name;
-
-  button.disabled = true;
-  message.textContent = "Sending OTP...";
-
-  try{
-    const {data,error} = await supabaseClient.auth.signUp({
-      phone: registrationPhone,
-      password: password,
-      options:{
-        data:{
-          full_name: registrationName
-        }
-      }
-    });
-
-    if(error) throw error;
-
-    document.getElementById("otpArea").classList.remove("hidden");
-    message.textContent =
-      "OTP request submitted. Enter the OTP received on your mobile.";
-
-  }catch(error){
-    message.textContent = "Registration error: " + error.message;
-  }finally{
-    button.disabled = false;
-  }
-}
-
-// VERIFY OTP AND SAVE USER
-async function verifyOTP(){
-  const otp = document.getElementById("regOtp").value.trim();
-  const message = document.getElementById("regMessage");
-  const button = document.getElementById("verifyButton");
-
-  if(!/^[0-9]{6}$/.test(otp)){
-    message.textContent = "Enter a valid 6 digit OTP.";
-    return;
-  }
-
-  button.disabled = true;
-  message.textContent = "Verifying OTP...";
-
-  try{
-    const {data,error} = await supabaseClient.auth.verifyOtp({
-      phone: registrationPhone,
-      token: otp,
-      type: "sms"
-    });
-
-    if(error) throw error;
-
-    const user = data.user;
-
-    if(!user){
-      throw new Error("User verification failed.");
-    }
-
-    const {error:saveError} = await supabaseClient
-      .from("users")
-      .insert({
-        user_id: user.id,
-        full_name: registrationName,
-        mobile: registrationPhone,
-        status: "pending"
-      });
-
-    if(saveError) throw saveError;
-
-    message.textContent =
-      "Registration successful! Your account is pending admin approval.";
-
-    document.getElementById("otpArea").classList.add("hidden");
-    document.getElementById("regName").value = "";
-    document.getElementById("regMobile").value = "";
-    document.getElementById("regPassword").value = "";
-    document.getElementById("regOtp").value = "";
-
-  }catch(error){
-    message.textContent = "Verification error: " + error.message;
-  }finally{
-    button.disabled = false;
-  }
-}
-
-// ADMIN LOGOUT
 async function logout(){
-  await supabaseClient.auth.signOut();
-  users = [];
+ await db.auth.signOut();
+ document.getElementById("dashboard").classList.add("hidden");
+ document.getElementById("login").classList.remove("hidden");
+ msg("Logged out.");
+}
 
+function showTab(id){
+ document.querySelectorAll(".tab").forEach(x=>x.classList.add("hidden"));
+ document.getElementById(id).classList.remove("hidden");
+ if(id==="users")renderUsers();
+ if(id==="audit")loadAudit();
+}
+
+async function loadUsers(){
+ const {data,error}=await db.from("users")
+ .select("id,user_id,full_name,mobile,status,kyc_status,account_status,created_at")
+ .order("created_at",{ascending:false});
+ if(error)return msg("Users error: "+error.message);
+ allUsers=data||[];
+ document.getElementById("totalUsers").textContent=allUsers.length;
+ document.getElementById("pendingUsers").textContent=allUsers.filter(u=>(u.kyc_status||"pending")==="pending").length;
+ document.getElementById("activeUsers").textContent=allUsers.filter(u=>(u.account_status||"active")==="active").length;
+ renderUsers();
+}
+
+function renderUsers(){
+ const q=(document.getElementById("search").value||"").toLowerCase();
+ const rows=allUsers.filter(u=>
+ (u.full_name||"").toLowerCase().includes(q)||
+ (u.mobile||"").toLowerCase().includes(q));
+ document.getElementById("userRows").innerHTML=rows.map(u=>`
+ <tr>
+ <td>${esc(u.full_name)}</td>
+ <td>${esc(u.mobile)}</td>
+ <td>${esc(u.kyc_status||"pending")}</td>
+ <td>${esc(u.account_status||"active")}</td>
+ <td>
+ <button onclick="changeKyc('${u.user_id}','approved')">Approve KYC</button>
+ <button class="danger" onclick="changeKyc('${u.user_id}','rejected')">Reject KYC</button>
+ <button class="secondary" onclick="toggleAccount('${u.user_id}','${u.account_status||"active"}')">${(u.account_status||"active")==="active"?"Suspend":"Activate"}</button>
+ </td>
+ </tr>`).join("");
+}
+
+function esc(v){
+ return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+
+async function changeKyc(userId,status){
+ if(!userId)return msg("User ID missing.");
+ if(!confirm("KYC "+status+" karna hai?"))return;
+ const {error}=await db.from("users").update({kyc_status:status}).eq("user_id",userId);
+ if(error)return msg(error.message);
+ await audit("KYC "+status,userId);
+ msg("KYC updated.");
+ await loadUsers();
+}
+
+async function toggleAccount(userId,current){
+ const next=current==="active"?"suspended":"active";
+ if(!confirm("Account "+next+" karna hai?"))return;
+ const {error}=await db.from("users").update({account_status:next}).eq("user_id",userId);
+ if(error)return msg(error.message);
+ await audit("Account "+next,userId);
+ msg("Account updated.");
+ await loadUsers();
+}
+
+async function audit(action,userId){
+ const {data:{user}}=await db.auth.getUser();
+ const {error}=await db.from("admin_audit_logs").insert({
+ admin_id:user.id,action,target_user_id:userId,details:"Admin panel action"
+ });
+ if(error)msg("Action hua, audit log error: "+error.message);
+}
+
+async function loadAudit(){
+ const {data,error}=await db.from("admin_audit_logs")
+ .select("action,target_user_id,details,created_at")
+ .order("created_at",{ascending:false}).limit(100);
+ if(error)return document.getElementById("auditRows").textContent=error.message;
+ document.getElementById("auditRows").innerHTML=(data||[]).map(x=>
+ `<p>${esc(x.action)} — ${esc(x.target_user_id)}<br><small>${esc(x.created_at)}</small></p>`
+ ).join("")||"No audit records.";
+}
+
+db.auth.onAuthStateChange(async(event,session)=>{
+ if(event==="SIGNED_OUT"){
   document.getElementById("dashboard").classList.add("hidden");
   document.getElementById("login").classList.remove("hidden");
-  document.getElementById("password").value = "";
-  document.getElementById("message").textContent = "Logged out.";
-}
-
-function showPage(page){
-  ["home","users","register"].forEach(id=>{
-    document.getElementById(id).classList.add("hidden");
-  });
-
-  document.getElementById(page).classList.remove("hidden");
-
-  if(page === "users") loadUsers();
-}
-
-// LOAD USERS
-async function loadUsers(){
-  const message = document.getElementById("usersMessage");
-  message.textContent = "Loading users...";
-
-  try{
-    const {data,error} = await supabaseClient
-      .from("users")
-      .select("full_name,mobile,status")
-      .order("created_at",{ascending:false});
-
-    if(error) throw error;
-
-    users = data || [];
-    renderUsers();
-
-    document.getElementById("total").textContent = users.length;
-
-    document.getElementById("active").textContent =
-      users.filter(u=>(u.status||"").toLowerCase()==="active").length;
-
-    document.getElementById("pending").textContent =
-      users.filter(u=>(u.status||"").toLowerCase()==="pending").length;
-
-    document.getElementById("systemStatus").textContent = "Connected";
-    document.getElementById("connectionStatus").textContent =
-      "Database connected. User list refreshed.";
-
-    message.textContent = "";
-
-  }catch(error){
-    message.textContent = "Could not load users: " + error.message;
-    document.getElementById("systemStatus").textContent = "Error";
-  }
-}
-
-// DISPLAY USERS
-function renderUsers(){
-  const q = (document.getElementById("search")?.value || "").toLowerCase();
-
-  const filtered = users.filter(u=>
-    (u.full_name||"").toLowerCase().includes(q) ||
-    (u.mobile||"").includes(q)
-  );
-
-  document.getElementById("userRows").innerHTML = filtered.map(u=>
-    `<tr>
-      <td>${safe(u.full_name||"")}</td>
-      <td>${safe(u.mobile||"")}</td>
-      <td>${safe(u.status||"")}</td>
-    </tr>`
-  ).join("");
-
-  document.getElementById("empty").style.display =
-    filtered.length ? "none" : "block";
-}
-
-function safe(value){
-  return String(value).replace(/[&<>"']/g,c=>({
-    "&":"&amp;",
-    "<":"&lt;",
-    ">":"&gt;",
-    '"':"&quot;",
-    "'":"&#39;"
-  }[c]));
-}
+ }
+});
 </script>
-
 </body>
 </html>
