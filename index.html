@@ -1,0 +1,80 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ROYAL EXCHANGE PRO</title>
+<style>
+*{box-sizing:border-box}
+body{
+ margin:0;background:#080b12;color:#fff;
+ font-family:Arial,sans-serif;
+}
+header{
+ background:#151a25;padding:22px;
+ border-bottom:2px solid #d4aa45;
+}
+h1{color:#e6bd58;margin:0}
+header p{color:#aaa;margin-bottom:0}
+main{padding:20px;max-width:900px;margin:auto}
+.card{
+ background:#171e2b;padding:20px;
+ border:1px solid #80652d;border-radius:12px;
+ margin:15px 0;
+}
+h2{color:#e6bd58}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.stat{background:#222c3b;padding:18px;border-radius:9px}
+.number{font-size:26px;color:#e6bd58}
+button{
+ background:#c69b40;color:#111;border:0;
+ padding:12px 18px;border-radius:7px;font-weight:bold;
+}
+input{
+ display:block;width:100%;padding:12px;margin:10px 0;
+ border-radius:6px;border:1px solid #777;
+}
+</style>
+</head>
+<body>
+<header>
+<h1>ROYAL EXCHANGE PRO</h1>
+<p>ULTIMATE EXCHANGE MANAGEMENT SYSTEM</p>
+</header>
+<main>
+<div class="card">
+<h2>Admin Demo Login</h2>
+<input id="username" placeholder="Enter demo username">
+<input id="password" type="password" placeholder="Enter demo password">
+<button onclick="login()">Login</button>
+<p id="message">Demo preview only</p>
+</div>
+<div id="dashboard" hidden>
+<h2>Admin Dashboard</h2>
+<div class="grid">
+<div class="stat">Users<div class="number">0</div></div>
+<div class="stat">Markets<div class="number">0</div></div>
+<div class="stat">Deposits<div class="number">0</div></div>
+<div class="stat">Reports<div class="number">0</div></div>
+</div>
+<div class="card">
+<h2>System Status</h2>
+<p>Demo mode active. No real money or transactions.</p>
+</div>
+</div>
+</main>
+<script>
+function login(){
+const u=document.getElementById("username").value;
+const p=document.getElementById("password").value;
+if(u==="admin" && p==="demo123"){
+document.getElementById("dashboard").hidden=false;
+document.getElementById("message").textContent="Demo login successful";
+}else{
+document.getElementById("message").textContent="Use admin / demo123";
+}
+}
+</script>
+</body>
+</html>
