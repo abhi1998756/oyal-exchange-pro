@@ -16,6 +16,7 @@ main{max-width:1100px;margin:auto;padding:18px}
 h2{color:#e6bd58}
 input{width:100%;padding:13px;margin:8px 0;border-radius:6px;border:1px solid #777;background:#101722;color:white}
 button{background:#c69b40;color:#111;border:0;padding:12px 17px;border-radius:7px;font-weight:bold;margin:5px;cursor:pointer}
+button:disabled{opacity:.5}
 .nav{display:flex;flex-wrap:wrap;gap:5px}
 .statgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
 .stat{background:#222c3b;padding:18px;border-radius:9px}
@@ -30,12 +31,10 @@ th{color:#e6bd58}
 </style>
 </head>
 <body>
-
 <header>
 <h1>ROYAL EXCHANGE PRO</h1>
 <p>ULTIMATE EXCHANGE MANAGEMENT SYSTEM</p>
 </header>
-
 <main>
 <section id="login" class="card">
 <h2>Admin Login</h2>
@@ -67,7 +66,7 @@ th{color:#e6bd58}
 <div class="card">
 <h2>System Information</h2>
 <p>ROYAL EXCHANGE PRO</p>
-<p id="connectionStatus" class="small">Database connected.</p>
+<p id="connectionStatus" class="small">Checking connection...</p>
 </div>
 </div>
 
@@ -88,14 +87,16 @@ th{color:#e6bd58}
 <div id="register" class="card hidden">
 <h2>Registration Setup</h2>
 <p>User registration and OTP verification are not connected yet.</p>
-<p class="small">The next step is to configure a secure registration process. No demo records will be saved as real users.</p>
+<p class="small">Secure registration will be configured next.</p>
 </div>
 </section>
 </main>
 
 <script>
 const SUPABASE_URL = "https://lsuscsonxyomusbpzxxt.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_p2Lhw8xmGstxTUq2S-T-rg_5licR";
+
+const SUPABASE_PUBLISHABLE_KEY =
+"sb_publishable_p2Lhw8xmGstxTUq2S-T-rg_5licR3Hq";
 
 const supabaseClient = window.supabase.createClient(
   SUPABASE_URL,
@@ -111,22 +112,22 @@ async function login(){
   const button = document.getElementById("loginButton");
 
   if(!email || !password){
-    message.textContent = "Enter your email and password.";
+    message.textContent = "Enter email and password.";
     return;
   }
 
   button.disabled = true;
   message.textContent = "Signing in...";
 
-  try {
-    const {data, error} = await supabaseClient.auth.signInWithPassword({
-      email: email,
-      password: password
+  try{
+    const {data,error} = await supabaseClient.auth.signInWithPassword({
+      email,
+      password
     });
 
     if(error) throw error;
 
-    const {data:isAdmin, error:adminError} =
+    const {data:isAdmin,error:adminError} =
       await supabaseClient.rpc("is_admin");
 
     if(adminError) throw adminError;
@@ -144,9 +145,9 @@ async function login(){
     message.textContent = "";
     await loadUsers();
 
-  } catch(error) {
+  }catch(error){
     message.textContent = error.message || "Login failed.";
-  } finally {
+  }finally{
     button.disabled = false;
   }
 }
@@ -165,7 +166,6 @@ function showPage(page){
     document.getElementById(id).classList.add("hidden");
   });
   document.getElementById(page).classList.remove("hidden");
-
   if(page === "users") loadUsers();
 }
 
@@ -173,11 +173,11 @@ async function loadUsers(){
   const message = document.getElementById("usersMessage");
   message.textContent = "Loading users...";
 
-  try {
-    const {data, error} = await supabaseClient
+  try{
+    const {data,error} = await supabaseClient
       .from("users")
       .select("full_name,mobile,status")
-      .order("created_at", {ascending:false});
+      .order("created_at",{ascending:false});
 
     if(error) throw error;
 
@@ -186,34 +186,34 @@ async function loadUsers(){
 
     document.getElementById("total").textContent = users.length;
     document.getElementById("active").textContent =
-      users.filter(u => (u.status || "").toLowerCase() === "active").length;
+      users.filter(u=>(u.status||"").toLowerCase()==="active").length;
     document.getElementById("pending").textContent =
-      users.filter(u => (u.status || "").toLowerCase() === "pending").length;
+      users.filter(u=>(u.status||"").toLowerCase()==="pending").length;
 
     document.getElementById("systemStatus").textContent = "Connected";
     document.getElementById("connectionStatus").textContent =
       "Database connected. User list refreshed.";
     message.textContent = "";
 
-  } catch(error) {
-    message.textContent = "Could not load users: " + error.message;
+  }catch(error){
+    message.textContent = "Could not load users: "+error.message;
     document.getElementById("systemStatus").textContent = "Error";
   }
 }
 
 function renderUsers(){
-  const q = (document.getElementById("search")?.value || "").toLowerCase();
+  const q=(document.getElementById("search")?.value||"").toLowerCase();
 
-  const filtered = users.filter(u =>
-    (u.full_name || "").toLowerCase().includes(q) ||
-    (u.mobile || "").includes(q)
+  const filtered=users.filter(u=>
+    (u.full_name||"").toLowerCase().includes(q)||
+    (u.mobile||"").includes(q)
   );
 
-  document.getElementById("userRows").innerHTML = filtered.map(u =>
+  document.getElementById("userRows").innerHTML=filtered.map(u=>
     `<tr>
-      <td>${safe(u.full_name || "")}</td>
-      <td>${safe(u.mobile || "")}</td>
-      <td>${safe(u.status || "")}</td>
+      <td>${safe(u.full_name||"")}</td>
+      <td>${safe(u.mobile||"")}</td>
+      <td>${safe(u.status||"")}</td>
     </tr>`
   ).join("");
 
