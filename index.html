@@ -7,7 +7,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *{box-sizing:border-box}
-body{margin:0;background:#080b12;color:#fff;font-family:Arial,sans-serif}
+body{margin:0;background:#080b12;color:white;font-family:Arial,sans-serif}
 header{background:#151a25;padding:18px;border-bottom:2px solid #d4aa45}
 h1{color:#e5bd59;font-size:23px;margin:0}
 small{color:#aaa}
@@ -17,7 +17,6 @@ input,button{width:100%;padding:13px;margin:7px 0;border-radius:7px;border:1px s
 button{background:#b58b32;color:#080b12;font-weight:bold;border:0;cursor:pointer}
 button.secondary{background:#303746;color:white}
 button.danger{background:#9d3434;color:white}
-button:disabled{opacity:.5}
 .hidden{display:none}
 nav{display:flex;gap:7px;flex-wrap:wrap;margin:15px 0}
 nav button{width:auto;flex:1;min-width:100px}
@@ -26,9 +25,7 @@ table{width:100%;border-collapse:collapse;min-width:650px}
 th,td{padding:10px;border-bottom:1px solid #34313a;text-align:left;font-size:13px}
 .tablewrap{overflow-x:auto}
 .gold{color:#e5bd59}
-.muted{color:#aaa}
-.status{color:#e5bd59}
-#message{white-space:pre-wrap;color:#e5bd59}
+#message{white-space:pre-wrap;color:#e5bd59;margin:10px 0}
 </style>
 </head>
 <body>
@@ -43,7 +40,21 @@ th,td{padding:10px;border-bottom:1px solid #34313a;text-align:left;font-size:13p
 <h2 class="gold">Admin Login</h2>
 <input id="email" type="email" placeholder="Admin Email">
 <input id="password" type="password" placeholder="Password">
-<button onclick="loginAdmin()">LOGIN</button>
+<button onclick="loginAdmin()">ADMIN LOGIN</button>
+<button class="secondary" onclick="showRegister()">NEW USER? REGISTER</button>
+</section>
+
+<section id="register" class="card hidden">
+<h2 class="gold">Create User Account</h2>
+<input id="regName" placeholder="Full Name">
+<input id="regMobile" type="tel" placeholder="Mobile Number (+91XXXXXXXXXX)">
+<input id="regPassword" type="password" placeholder="Create Password (minimum 6 characters)">
+<button id="sendOtpButton" onclick="sendOTP()">SEND OTP</button>
+<div id="otpArea" class="hidden">
+<input id="otp" inputmode="numeric" maxlength="6" placeholder="Enter 6 Digit OTP">
+<button onclick="verifyOTP()">VERIFY OTP & REGISTER</button>
+</div>
+<button class="secondary" onclick="showLogin()">BACK TO LOGIN</button>
 </section>
 
 <section id="dashboard" class="hidden">
@@ -93,23 +104,118 @@ th,td{padding:10px;border-bottom:1px solid #34313a;text-align:left;font-size:13p
 const SUPABASE_URL="https://lsuscsonxyomusbpzxxt.supabase.co";
 const SUPABASE_KEY="sb_publishable_p2Lhw8xmGstxTUq2S-T-rg_5licR3Hq";
 const db=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-let allUsers=[];
 
-function msg(t){document.getElementById("message").textContent=t;}
+let allUsers=[];
+let pendingPhone="";
+let pendingName="";
+
+function msg(t){
+ document.getElementById("message").textContent=t;
+}
+
+function showLogin(){
+ document.getElementById("register").classList.add("hidden");
+ document.getElementById("dashboard").classList.add("hidden");
+ document.getElementById("login").classList.remove("hidden");
+}
+
+function showRegister(){
+ document.getElementById("login").classList.add("hidden");
+ document.getElementById("dashboard").classList.add("hidden");
+ document.getElementById("register").classList.remove("hidden");
+ msg("");
+}
+
+async function sendOTP(){
+ const name=document.getElementById("regName").value.trim();
+ let phone=document.getElementById("regMobile").value.trim();
+ const password=document.getElementById("regPassword").value;
+
+ if(!name)return msg("Full Name bhariye.");
+ phone=phone.replace(/[\s-]/g,"");
+ if(/^[6-9]\d{9}$/.test(phone))phone="+91"+phone;
+ if(!/^\+91[6-9]\d{9}$/.test(phone))
+  return msg("Sahi Indian mobile number bhariye.");
+ if(password.length<6)return msg("Password kam se kam 6 characters ka hona chahiye.");
+
+ pendingPhone=phone;
+ pendingName=name;
+ msg("OTP bheja ja raha hai...");
+
+ const {data,error}=await db.auth.signUp({
+  phone:phone,
+  password:password,
+  options:{data:{full_name:name}}
+ });
+
+ if(error)return msg("OTP error: "+error.message);
+
+ document.getElementById("otpArea").classList.remove("hidden");
+ document.getElementById("sendOtpButton").disabled=true;
+ msg("OTP request bhej di gayi hai. Mobile par OTP check karein.");
+}
+
+async function verifyOTP(){
+ const token=document.getElementById("otp").value.trim();
+ if(!/^\d{6}$/.test(token))return msg("6 digit OTP bhariye.");
+
+ msg("OTP verify ho raha hai...");
+
+ const {data,error}=await db.auth.verifyOtp({
+  phone:pendingPhone,
+  token:token,
+  type:"sms"
+ });
+
+ if(error)return msg("OTP verification error: "+error.message);
+
+ const user=data.user;
+ if(!user)return msg("User verification nahi ho saka.");
+
+ const {error:insertError}=await db.from("users").insert({
+  user_id:user.id,
+  full_name:pendingName,
+  mobile:pendingPhone,
+  status:"pending",
+  kyc_status:"pending",
+  account_status:"active"
+ });
+
+ if(insertError){
+  msg("Account verify hua, lekin user record save nahi hua: "+insertError.message);
+  return;
+ }
+
+ await db.auth.signOut();
+ document.getElementById("regName").value="";
+ document.getElementById("regMobile").value="";
+ document.getElementById("regPassword").value="";
+ document.getElementById("otp").value="";
+ document.getElementById("otpArea").classList.add("hidden");
+ document.getElementById("sendOtpButton").disabled=false;
+ pendingPhone="";
+ pendingName="";
+ showLogin();
+ msg("Registration successful. Admin approval ka intezar karein.");
+}
 
 async function loginAdmin(){
  const email=document.getElementById("email").value.trim();
  const password=document.getElementById("password").value;
  if(!email||!password)return msg("Email aur password bhariye.");
+
  msg("Logging in...");
- const {data,error}=await db.auth.signInWithPassword({email,password});
+ const {error}=await db.auth.signInWithPassword({email,password});
  if(error)return msg(error.message);
+
  const {data:admin,error:adminError}=await db.rpc("is_admin");
  if(adminError||!admin){
   await db.auth.signOut();
   return msg("Admin access nahi mila.");
  }
+
  document.getElementById("login").classList.add("hidden");
+ document.getElementById("register").classList.add("hidden");
  document.getElementById("dashboard").classList.remove("hidden");
  msg("Admin login successful.");
  await loadUsers();
@@ -117,8 +223,7 @@ async function loginAdmin(){
 
 async function logout(){
  await db.auth.signOut();
- document.getElementById("dashboard").classList.add("hidden");
- document.getElementById("login").classList.remove("hidden");
+ showLogin();
  msg("Logged out.");
 }
 
@@ -133,12 +238,22 @@ async function loadUsers(){
  const {data,error}=await db.from("users")
  .select("id,user_id,full_name,mobile,status,kyc_status,account_status,created_at")
  .order("created_at",{ascending:false});
+
  if(error)return msg("Users error: "+error.message);
+
  allUsers=data||[];
  document.getElementById("totalUsers").textContent=allUsers.length;
- document.getElementById("pendingUsers").textContent=allUsers.filter(u=>(u.kyc_status||"pending")==="pending").length;
- document.getElementById("activeUsers").textContent=allUsers.filter(u=>(u.account_status||"active")==="active").length;
+ document.getElementById("pendingUsers").textContent=
+ allUsers.filter(u=>(u.kyc_status||"pending")==="pending").length;
+ document.getElementById("activeUsers").textContent=
+ allUsers.filter(u=>(u.account_status||"active")==="active").length;
  renderUsers();
+}
+
+function esc(v){
+ return String(v??"").replace(/[&<>"']/g,c=>({
+ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+ }[c]));
 }
 
 function renderUsers(){
@@ -146,6 +261,7 @@ function renderUsers(){
  const rows=allUsers.filter(u=>
  (u.full_name||"").toLowerCase().includes(q)||
  (u.mobile||"").toLowerCase().includes(q));
+
  document.getElementById("userRows").innerHTML=rows.map(u=>`
  <tr>
  <td>${esc(u.full_name)}</td>
@@ -155,59 +271,65 @@ function renderUsers(){
  <td>
  <button onclick="changeKyc('${u.user_id}','approved')">Approve KYC</button>
  <button class="danger" onclick="changeKyc('${u.user_id}','rejected')">Reject KYC</button>
- <button class="secondary" onclick="toggleAccount('${u.user_id}','${u.account_status||"active"}')">${(u.account_status||"active")==="active"?"Suspend":"Activate"}</button>
+ <button class="secondary" onclick="toggleAccount('${u.user_id}','${u.account_status||"active"}')">
+ ${(u.account_status||"active")==="active"?"Suspend":"Activate"}
+ </button>
  </td>
  </tr>`).join("");
-}
-
-function esc(v){
- return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 }
 
 async function changeKyc(userId,status){
  if(!userId)return msg("User ID missing.");
  if(!confirm("KYC "+status+" karna hai?"))return;
- const {error}=await db.from("users").update({kyc_status:status}).eq("user_id",userId);
+
+ const {error}=await db.from("users")
+ .update({kyc_status:status}).eq("user_id",userId);
+
  if(error)return msg(error.message);
  await audit("KYC "+status,userId);
- msg("KYC updated.");
+ msg("KYC status updated.");
  await loadUsers();
 }
 
 async function toggleAccount(userId,current){
  const next=current==="active"?"suspended":"active";
  if(!confirm("Account "+next+" karna hai?"))return;
- const {error}=await db.from("users").update({account_status:next}).eq("user_id",userId);
+
+ const {error}=await db.from("users")
+ .update({account_status:next}).eq("user_id",userId);
+
  if(error)return msg(error.message);
  await audit("Account "+next,userId);
- msg("Account updated.");
+ msg("Account status updated.");
  await loadUsers();
 }
 
 async function audit(action,userId){
  const {data:{user}}=await db.auth.getUser();
  const {error}=await db.from("admin_audit_logs").insert({
- admin_id:user.id,action,target_user_id:userId,details:"Admin panel action"
+  admin_id:user.id,
+  action:action,
+  target_user_id:userId,
+  details:"Admin panel action"
  });
- if(error)msg("Action hua, audit log error: "+error.message);
+ if(error)msg("Audit log error: "+error.message);
 }
 
 async function loadAudit(){
  const {data,error}=await db.from("admin_audit_logs")
  .select("action,target_user_id,details,created_at")
  .order("created_at",{ascending:false}).limit(100);
- if(error)return document.getElementById("auditRows").textContent=error.message;
+
+ if(error){
+  document.getElementById("auditRows").textContent=error.message;
+  return;
+ }
+
  document.getElementById("auditRows").innerHTML=(data||[]).map(x=>
- `<p>${esc(x.action)} — ${esc(x.target_user_id)}<br><small>${esc(x.created_at)}</small></p>`
+ `<p>${esc(x.action)} — ${esc(x.target_user_id)}<br>
+ <small>${esc(x.created_at)}</small></p>`
  ).join("")||"No audit records.";
 }
-
-db.auth.onAuthStateChange(async(event,session)=>{
- if(event==="SIGNED_OUT"){
-  document.getElementById("dashboard").classList.add("hidden");
-  document.getElementById("login").classList.remove("hidden");
- }
-});
 </script>
 </body>
 </html>
