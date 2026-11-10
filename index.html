@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ROYAL EXCHANGE PRO</title>
+<title>ROYAL EXCHANGE PRO - WALLET</title>
 <style>
 *{box-sizing:border-box}
 body{margin:0;background:#080b12;color:white;font-family:Arial}
 header{background:#151a25;padding:20px;border-bottom:2px solid #d4aa45}
 h1,.gold{color:#e5bd59}
-main{max-width:1100px;margin:auto;padding:15px}
+main{max-width:850px;margin:auto;padding:15px}
 .card{background:#151a25;border:1px solid #49402e;border-radius:12px;padding:18px;margin:12px 0}
 input,button{width:100%;padding:13px;margin:7px 0;border-radius:7px;border:1px solid #444;background:#090d16;color:white}
 button{background:#b58b32;color:#080b12;font-weight:bold;cursor:pointer}
@@ -17,18 +17,20 @@ button{background:#b58b32;color:#080b12;font-weight:bold;cursor:pointer}
 .danger{background:#9d3434;color:white}
 .hidden{display:none}
 nav{display:flex;gap:6px;flex-wrap:wrap}
-nav button{width:auto;flex:1}
-.stat{font-size:26px;color:#e5bd59;font-weight:bold}
-.gamegrid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
-.game{background:#202635;border:1px solid #b58b32;padding:25px 10px;text-align:center;border-radius:12px}
+nav button{flex:1}
+.stat{font-size:30px;color:#e5bd59;font-weight:bold}
+.user{padding:12px;background:#202635;border-radius:8px;margin:8px 0}
 #message{color:#e5bd59;white-space:pre-wrap}
+small{color:#aaa}
 </style>
 </head>
 <body>
+
 <header>
 <h1>ROYAL EXCHANGE PRO</h1>
-ULTIMATE EXCHANGE MANAGEMENT SYSTEM
+WALLET MANAGEMENT SYSTEM
 </header>
+
 <main>
 <div id="message"></div>
 
@@ -37,59 +39,28 @@ ULTIMATE EXCHANGE MANAGEMENT SYSTEM
 <input id="username" placeholder="Username">
 <input id="password" type="password" placeholder="Password">
 <button onclick="login()">LOGIN</button>
-<button class="secondary" onclick="register()">CREATE DEMO ACCOUNT</button>
+<button class="secondary" onclick="register()">CREATE USER ACCOUNT</button>
 </section>
 
 <section id="dashboard" class="hidden">
 <nav id="navigation"></nav>
 
 <div id="home" class="card">
-<h2 class="gold">Dashboard</h2>
-<p>Account Balance</p>
-<div class="stat" id="balance">10000</div>
-<p>Virtual Demo Credits</p>
+<h2 class="gold">My Wallet</h2>
+<p>Available Demo Balance</p>
+<div class="stat" id="balance">0.00</div>
+<small>Virtual demo credits only</small>
 </div>
 
-<div id="games" class="card">
-<h2 class="gold">Casino Games</h2>
-<div class="gamegrid">
-<div class="game">
-<h3>🎰 SLOT MACHINE</h3>
-<button onclick="playSlot()">PLAY</button>
-</div>
-<div class="game">
-<h3>🎲 DICE GAME</h3>
-<button onclick="playDice()">PLAY</button>
-</div>
-<div class="game">
-<h3>🃏 CARD GAME</h3>
-<button onclick="playCard()">PLAY</button>
-</div>
-<div class="game">
-<h3>🎯 LUCKY NUMBER</h3>
-<button onclick="playLucky()">PLAY</button>
-</div>
-</div>
-</div>
-
-<div id="wallet" class="card">
-<h2 class="gold">Demo Wallet</h2>
-<input id="amount" type="number" placeholder="Enter demo credits">
-<button onclick="addCredits()">ADD DEMO CREDITS</button>
-<button class="secondary" onclick="withdraw()">DEMO WITHDRAW REQUEST</button>
-<p id="walletMessage"></p>
+<div id="wallet" class="card hidden">
+<h2 class="gold">Wallet Transactions</h2>
+<div id="transactions"></div>
 </div>
 
 <div id="admin" class="card hidden">
 <h2 class="gold">Admin Panel</h2>
-<p>Total Users: <span id="users">0</span></p>
-<button onclick="showUsers()">VIEW USERS</button>
+<p>Total Users: <b id="totalUsers">0</b></p>
 <div id="userList"></div>
-</div>
-
-<div id="history" class="card">
-<h2 class="gold">Game History</h2>
-<div id="records"></div>
 </div>
 
 <button class="danger" onclick="logout()">LOGOUT</button>
@@ -100,109 +71,176 @@ ULTIMATE EXCHANGE MANAGEMENT SYSTEM
 let accounts=JSON.parse(localStorage.getItem("royalAccounts")||"{}");
 let current="";
 let isAdmin=false;
-let credits=10000;
 
 function save(){
  localStorage.setItem("royalAccounts",JSON.stringify(accounts));
 }
+
 function message(t){
  document.getElementById("message").textContent=t;
 }
+
 function register(){
  let u=prompt("Create username");
  if(!u)return;
+ u=u.trim();
  let p=prompt("Create password");
  if(!p)return;
- if(accounts[u])return message("Username already exists");
- accounts[u]={password:p,balance:10000,history:[]};
+
+ if(u.toLowerCase()==="admin"||accounts[u]){
+  message("Username already exists");
+  return;
+ }
+
+ accounts[u]={
+  password:p,
+  balance:0,
+  transactions:[]
+ };
+
  save();
- message("Demo account created. Login now.");
+ message("Account created. Please login.");
 }
+
 function login(){
  let u=document.getElementById("username").value.trim();
  let p=document.getElementById("password").value;
- if(u==="admin"&&p==="admin123"){
- current=u;isAdmin=true;openDashboard();return;
+
+ if(u==="admin" && p==="admin123"){
+  current="admin";
+  isAdmin=true;
+  openDashboard();
+  return;
  }
- if(!accounts[u]||accounts[u].password!==p)
- return message("Invalid login");
- current=u;isAdmin=false;openDashboard();
+
+ if(!accounts[u]||accounts[u].password!==p){
+  message("Invalid username or password");
+  return;
+ }
+
+ current=u;
+ isAdmin=false;
+ openDashboard();
 }
+
 function openDashboard(){
  document.getElementById("login").classList.add("hidden");
  document.getElementById("dashboard").classList.remove("hidden");
+
  let nav=document.getElementById("navigation");
  nav.innerHTML="";
- ["home","games","wallet","history"].forEach(x=>{
- let b=document.createElement("button");
- b.textContent=x.toUpperCase();
- b.onclick=()=>show(x);
- nav.appendChild(b);
- });
+
  if(isAdmin){
- let b=document.createElement("button");
- b.textContent="ADMIN";
- b.onclick=()=>show("admin");
- nav.appendChild(b);
+  addNav("ADMIN","admin");
+ }else{
+  addNav("MY WALLET","home");
+  addNav("TRANSACTIONS","wallet");
  }
+
  refresh();
- show("home");
+ show(isAdmin?"admin":"home");
 }
+
+function addNav(label,id){
+ let b=document.createElement("button");
+ b.textContent=label;
+ b.onclick=()=>show(id);
+ document.getElementById("navigation").appendChild(b);
+}
+
 function show(id){
- ["home","games","wallet","admin","history"].forEach(x=>{
- document.getElementById(x).classList.add("hidden");
+ ["home","wallet","admin"].forEach(x=>{
+  document.getElementById(x).classList.add("hidden");
  });
  document.getElementById(id).classList.remove("hidden");
+
+ if(id==="admin")showUsers();
+ if(id==="wallet")showTransactions();
 }
+
 function refresh(){
- if(!isAdmin){
- document.getElementById("balance").textContent=accounts[current].balance.toFixed(2);
- document.getElementById("records").innerHTML=
- accounts[current].history.map(x=>"<p>"+x+"</p>").join("");
+ if(!isAdmin && accounts[current]){
+  document.getElementById("balance").textContent=
+   Number(accounts[current].balance).toFixed(2);
  }
 }
-function play(type){
- if(isAdmin)return message("Admin cannot play games");
- let a=accounts[current];
- let bet=Number(prompt("Enter demo credits to play"));
- if(!Number.isFinite(bet)||bet<=0||bet>10000)return;
- if(bet>a.balance)return message("Insufficient demo credits");
- let won=Math.random()>.5;
- let result=won?bet:-bet;
- a.balance+=result;
- a.history.unshift(type+": "+(won?"WIN +":"LOSS ")+Math.abs(result));
- save();refresh();
- alert(type+": "+(won?"DEMO WIN!":"DEMO LOSS!"));
-}
-function playSlot(){play("Slot Machine")}
-function playDice(){play("Dice Game")}
-function playCard(){play("Card Game")}
-function playLucky(){play("Lucky Number")}
-function addCredits(){
+
+function showTransactions(){
  if(isAdmin)return;
- let n=Number(document.getElementById("amount").value);
- if(!Number.isFinite(n)||n<=0||n>1000000)return message("Invalid amount");
- accounts[current].history.unshift("Demo credit request: "+n);
- save();refresh();
- document.getElementById("walletMessage").textContent="Demo credit request recorded. No real money added.";
+ let list=accounts[current].transactions||[];
+ document.getElementById("transactions").innerHTML=
+ list.length
+ ? list.map(x=>"<div class='user'>"+escapeHTML(x)+"</div>").join("")
+ : "<p>No transactions yet.</p>";
 }
-function withdraw(){
- if(isAdmin)return;
- let n=Number(document.getElementById("amount").value);
- if(!Number.isFinite(n)||n<=0)return;
- accounts[current].history.unshift("Demo withdrawal request: "+n);
- save();refresh();
- document.getElementById("walletMessage").textContent="Demo withdrawal request recorded. No cash payout.";
+
+function escapeHTML(s){
+ return String(s).replace(/[&<>"']/g,c=>({
+  "&":"&amp;","<":"&lt;",">":"&gt;",
+  '"':"&quot;","'":"&#39;"
+ }[c]));
 }
+
 function showUsers(){
  if(!isAdmin)return;
- document.getElementById("users").textContent=Object.keys(accounts).length;
- document.getElementById("userList").innerHTML=Object.keys(accounts).map(u=>
- "<p>"+u+" — "+accounts[u].balance.toFixed(2)+" demo credits</p>"
- ).join("");
+
+ let names=Object.keys(accounts);
+ document.getElementById("totalUsers").textContent=names.length;
+
+ let html="";
+ names.forEach(u=>{
+  html+=`
+   <div class="user">
+    <b>${escapeHTML(u)}</b>
+    <p>Balance: ${Number(accounts[u].balance).toFixed(2)} Demo Credits</p>
+    <button onclick="changeBalance('${encodeURIComponent(u)}','add')">
+     ADD BALANCE
+    </button>
+    <button class="secondary"
+     onclick="changeBalance('${encodeURIComponent(u)}','deduct')">
+     DEDUCT BALANCE
+    </button>
+   </div>`;
+ });
+
+ document.getElementById("userList").innerHTML=
+ html||"<p>No users registered.</p>";
 }
+
+function changeBalance(encoded,type){
+ if(!isAdmin)return;
+
+ let u=decodeURIComponent(encoded);
+ let n=Number(prompt("Enter demo credits amount"));
+
+ if(!Number.isFinite(n)||n<=0){
+  alert("Invalid amount");
+  return;
+ }
+
+ if(type==="deduct"&&n>accounts[u].balance){
+  alert("Insufficient wallet balance");
+  return;
+ }
+
+ if(type==="add"){
+  accounts[u].balance+=n;
+ }else{
+  accounts[u].balance-=n;
+ }
+
+ let note=(type==="add"?"Admin added ":"Admin deducted ")+
+  n.toFixed(2)+" demo credits";
+
+ accounts[u].transactions.unshift(note);
+ save();
+ showUsers();
+ alert("Wallet updated successfully");
+}
+
 function logout(){
- current="";isAdmin=false;
+ current="";
+ isAdmin=false;
  document.getElementById("dashboard").classList.add("hidden");
  document.getElementById("login").classList.remove("hidden");
  message("Logged out");
