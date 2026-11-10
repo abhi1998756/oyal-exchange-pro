@@ -8,138 +8,130 @@
 <style>
 *{box-sizing:border-box}
 body{margin:0;background:#090909;color:#eee;font-family:Arial,sans-serif}
-header{background:#111;padding:18px;text-align:center;border-bottom:2px solid #b58b32}
+header{background:#111;padding:18px;text-align:center;border-bottom:2px solid #c49a40}
 h1,h2,h3{color:#e8bd57}
-h1{margin:0;font-size:24px}
-small{color:#aaa}
-main{max-width:950px;margin:auto;padding:14px}
+h1{margin:0}
+main{max-width:1000px;margin:auto;padding:14px}
 .card{background:#151515;border:1px solid #765b29;border-radius:12px;padding:16px;margin:13px 0}
-input,select,button{width:100%;padding:12px;margin:7px 0;border:1px solid #80652e;border-radius:7px;background:#090909;color:white}
-button{background:#c49a40;color:#111;font-weight:bold;border:0;cursor:pointer}
+input,select{width:100%;padding:13px;margin:7px 0;background:#080808;color:white;border:1px solid #80652e;border-radius:7px}
+button{padding:12px;margin:5px 2px;background:#c49a40;color:#111;border:0;border-radius:7px;font-weight:bold;cursor:pointer}
 button.secondary{background:#292929;color:#e8bd57;border:1px solid #80652e}
 button.danger{background:#762d2d;color:white}
-.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.balance{font-size:30px;font-weight:bold;color:#e8bd57}
-.gold{color:#e8bd57}
-.item{border-bottom:1px solid #333;padding:12px 0;overflow-wrap:anywhere}
-.category{display:inline-block;background:#242016;border:1px solid #9c792e;padding:12px;margin:5px;border-radius:8px}
+.nav{display:flex;flex-wrap:wrap;gap:5px}
+.nav button{flex:1;min-width:100px}
 .hidden{display:none!important}
+.gold{color:#e8bd57}
+.balance{font-size:30px;color:#e8bd57;font-weight:bold}
+.item{padding:12px 0;border-bottom:1px solid #333;overflow-wrap:anywhere}
 #message{padding:10px;color:#e8bd57;overflow-wrap:anywhere}
-.badge{background:#332819;color:#e8bd57;padding:5px 9px;border-radius:6px}
+.small{font-size:12px;color:#aaa}
+.category{display:inline-block;padding:12px;margin:5px;background:#292318;border:1px solid #a17c30;border-radius:8px}
 </style>
 </head>
 <body>
-
 <header>
 <h1>ROYAL EXCHANGE PRO</h1>
-<small>ULTIMATE EXCHANGE MANAGEMENT SYSTEM</small>
+<div class="small">ULTIMATE EXCHANGE MANAGEMENT SYSTEM</div>
 </header>
 
 <main>
-<div id="message"></div>
+<div id="message">Welcome</div>
 
 <section id="auth" class="card">
-<h2>Welcome</h2>
-<p>Login to your account or create a new account.</p>
+<h2>Account Login</h2>
 <input id="email" type="email" placeholder="Email address">
-<input id="password" type="password" placeholder="Password (minimum 6 characters)">
+<input id="password" type="password" placeholder="Password">
 <div id="registerFields">
 <input id="fullName" placeholder="Full name">
 <input id="mobile" placeholder="Mobile number">
 </div>
-<div class="row">
 <button onclick="login()">LOGIN</button>
-<button class="secondary" onclick="register()">REGISTER</button>
-</div>
+<button class="secondary" onclick="register()">CREATE ACCOUNT</button>
 </section>
 
 <section id="app" class="hidden">
-
 <div class="card">
-<div class="row">
-<div>
-<h3>ROYAL EXCHANGE PRO</h3>
-<div id="userName">User</div>
-<div id="roleLabel" class="gold"></div>
-</div>
-<div>
+<div id="userName" class="gold"></div>
+<div id="roleLabel"></div>
 <button class="secondary" onclick="logout()">LOGOUT</button>
 </div>
-</div>
-</div>
 
-<!-- USER PANEL -->
 <section id="userPanel">
-
 <div class="card">
 <h2>My Account</h2>
 <select id="mode" onchange="renderBalance()">
 <option value="demo">DEMO ACCOUNT</option>
-<option value="original">ORIGINAL ACCOUNT – VIRTUAL POINTS</option>
+<option value="original">ORIGINAL ACCOUNT - VIRTUAL POINTS</option>
 </select>
-<div class="balance" id="balance">0.00</div>
-<div id="balanceLabel" class="gold">Demo virtual credits</div>
-<p><small>Original mode points are non-redeemable virtual points. No real-money transactions.</small></p>
+<div id="balance" class="balance">0.00</div>
+<div id="balanceLabel" class="gold"></div>
+<p class="small">Virtual credits only. No real-money transactions or withdrawals.</p>
 </div>
-
 <div class="card">
 <h2>Categories</h2>
 <div id="announcement" class="gold"></div>
 <div id="categories">Loading...</div>
 </div>
-
 <div class="card">
 <h2>My Activity</h2>
 <div id="transactions">Loading...</div>
 </div>
-
 </section>
 
-<!-- ADMIN PANEL -->
 <section id="adminPanel" class="hidden">
-
 <div class="card">
-<h2>Admin Dashboard</h2>
-<div id="adminStats">Loading...</div>
+<h2>ADMIN CONTROL PANEL</h2>
+<div class="nav">
+<button onclick="showTab('dashboard')">Dashboard</button>
+<button onclick="showTab('users')">Users</button>
+<button onclick="showTab('credits')">Credits</button>
+<button onclick="showTab('categoriesTab')">Categories</button>
+<button onclick="showTab('settingsTab')">Settings</button>
+</div>
 </div>
 
-<div class="card">
+<div id="dashboard" class="adminTab card">
+<h2>Dashboard</h2>
+<div id="adminStats">Loading...</div>
+<button onclick="loadAdmin()">REFRESH DASHBOARD</button>
+</div>
+
+<div id="users" class="adminTab card hidden">
 <h2>User Management</h2>
-<p><small>Registered user list and UUID. Passwords are never displayed.</small></p>
+<p class="small">Registered users. Passwords are never displayed.</p>
 <div id="userList">Loading...</div>
 </div>
 
-<div class="card">
+<div id="credits" class="adminTab card hidden">
 <h2>Manage Virtual Credits</h2>
 <input id="targetUser" placeholder="Paste User UUID">
 <select id="creditMode">
 <option value="demo">Demo Credits</option>
-<option value="original">Original Mode Virtual Points</option>
+<option value="original">Original Virtual Points</option>
 </select>
-<input id="creditAmount" type="number" step="0.01" placeholder="Amount: positive to add, negative to deduct">
+<input id="creditAmount" type="number" step="0.01" placeholder="Positive = Add, Negative = Deduct">
 <input id="creditNote" placeholder="Reason / note">
-<button onclick="adjustCredits()">UPDATE VIRTUAL BALANCE</button>
+<button onclick="adjustCredits()">UPDATE BALANCE</button>
 </div>
 
-<div class="card">
+<div id="categoriesTab" class="adminTab card hidden">
 <h2>Manage Categories</h2>
 <input id="catName" placeholder="Category name">
-<input id="catDesc" placeholder="Category description">
+<input id="catDesc" placeholder="Description">
 <button onclick="addCategory()">ADD CATEGORY</button>
 <div id="adminCategories"></div>
 </div>
 
-<div class="card">
+<div id="settingsTab" class="adminTab card hidden">
 <h2>Website Announcement</h2>
 <input id="announcementInput" placeholder="Enter announcement">
 <button onclick="saveAnnouncement()">SAVE ANNOUNCEMENT</button>
 </div>
 
 <div class="card">
-<h2>All Recent Transactions</h2>
+<h2>Recent Virtual Transactions</h2>
 <div id="adminTransactions">Loading...</div>
 </div>
-
 </section>
 </section>
 </main>
@@ -149,159 +141,121 @@ const SUPABASE_URL="https://lsuscsonxyomusbpzxxt.supabase.co";
 const SUPABASE_KEY="sb_publishable_p2Lhw8xmGstxTUq2S-T-rg_5licR3Hq";
 const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
-let currentUser=null;
-let currentProfile=null;
-let wallet=null;
-let realtimeChannels=[];
+let currentUser=null,currentProfile=null,wallet=null;
 
 const el=id=>document.getElementById(id);
-
 function msg(t){el("message").textContent=t}
-
-function escapeHtml(value){
- return String(value??"").replace(/[&<>"']/g,c=>({
+function esc(v){
+ return String(v??"").replace(/[&<>"']/g,c=>({
  "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
  })[c]);
 }
+function showTab(id){
+ document.querySelectorAll(".adminTab").forEach(x=>x.classList.add("hidden"));
+ el(id).classList.remove("hidden");
+ if(id==="users")loadAdmin();
+ if(id==="categoriesTab")renderAdminCategories();
+}
+
+async function safe(fn){
+ try{await fn()}catch(e){msg("Error: "+(e.message||e))}
+}
 
 async function register(){
- const email=el("email").value.trim();
- const password=el("password").value;
- const full_name=el("fullName").value.trim();
- const mobile=el("mobile").value.trim();
-
- if(!email||password.length<6){
-  msg("Email aur minimum 6-character password daalo.");
-  return;
- }
-
- const {data,error}=await db.auth.signUp({
-  email,password,
-  options:{data:{full_name,mobile}}
+ await safe(async()=>{
+  const email=el("email").value.trim();
+  const password=el("password").value;
+  const full_name=el("fullName").value.trim();
+  const mobile=el("mobile").value.trim();
+  if(!email||password.length<6){msg("Email aur minimum 6 character password daalein.");return}
+  const {data,error}=await db.auth.signUp({
+   email,password,options:{data:{full_name,mobile}}
+  });
+  if(error)throw error;
+  if(data.session)await startApp();
+  else msg("Registration successful. Email verification ke baad login karein.");
  });
-
- if(error){msg(error.message);return}
-
- if(data.session){
-  await startApp();
- }else{
-  msg("Registration successful. Email verification karo, phir login karo.");
- }
 }
 
 async function login(){
- const email=el("email").value.trim();
- const password=el("password").value;
-
- const {data,error}=await db.auth.signInWithPassword({
-  email,password
+ await safe(async()=>{
+  const email=el("email").value.trim();
+  const password=el("password").value;
+  if(!email||!password){msg("Email aur password daalein.");return}
+  const {error}=await db.auth.signInWithPassword({email,password});
+  if(error)throw error;
+  await startApp();
  });
-
- if(error){msg(error.message);return}
- await startApp();
 }
 
 async function logout(){
- realtimeChannels.forEach(c=>db.removeChannel(c));
- realtimeChannels=[];
  await db.auth.signOut();
- currentUser=null;
- currentProfile=null;
- wallet=null;
+ currentUser=null;currentProfile=null;wallet=null;
  el("app").classList.add("hidden");
  el("auth").classList.remove("hidden");
- msg("Logged out successfully.");
+ msg("Logged out.");
 }
 
 async function startApp(){
  const {data:{user},error:userError}=await db.auth.getUser();
- if(userError||!user){msg("Please login again.");return}
-
+ if(userError||!user)throw userError||new Error("Login required");
  currentUser=user;
 
- const {data:profile,error}=await db
-  .from("royal_profiles")
-  .select("*")
-  .eq("id",user.id)
-  .single();
-
- if(error){
-  msg("Profile load error: "+error.message);
-  return;
- }
+ const {data:profile,error}=await db.from("royal_profiles")
+  .select("*").eq("id",user.id).single();
+ if(error)throw error;
 
  currentProfile=profile;
-
  el("auth").classList.add("hidden");
  el("app").classList.remove("hidden");
  el("userName").textContent=profile.full_name||user.email;
  el("roleLabel").textContent=profile.role==="admin"?"ADMIN ACCESS":"USER ACCESS";
 
  el("adminPanel").classList.toggle("hidden",profile.role!=="admin");
+ el("userPanel").classList.remove("hidden");
 
  await loadWallet();
  await loadCategories();
  await loadSettings();
  await loadTransactions();
 
- if(profile.role==="admin")await loadAdmin();
-
- subscribeRealtime();
+ if(profile.role==="admin"){
+  await loadAdmin();
+  showTab("dashboard");
+ }
  msg("ROYAL EXCHANGE PRO loaded.");
 }
 
 async function loadWallet(){
- const {data,error}=await db
-  .from("royal_wallets")
-  .select("*")
-  .eq("user_id",currentUser.id)
-  .maybeSingle();
-
- if(error){msg("Wallet error: "+error.message);return}
-
+ const {data,error}=await db.from("royal_wallets")
+  .select("*").eq("user_id",currentUser.id).maybeSingle();
+ if(error)throw error;
  wallet=data||{demo_balance:0,original_points:0};
  renderBalance();
 }
 
 function renderBalance(){
  if(!wallet)return;
-
  const mode=el("mode").value;
- const amount=mode==="demo"
-  ?wallet.demo_balance
-  :wallet.original_points;
-
+ const amount=mode==="demo"?wallet.demo_balance:wallet.original_points;
  el("balance").textContent=Number(amount||0).toFixed(2);
- el("balanceLabel").textContent=mode==="demo"
-  ?"DEMO VIRTUAL CREDITS"
-  :"ORIGINAL MODE – VIRTUAL POINTS";
+ el("balanceLabel").textContent=mode==="demo"?"DEMO VIRTUAL CREDITS":"ORIGINAL VIRTUAL POINTS";
 }
 
 async function loadCategories(){
- const {data,error}=await db
-  .from("panel_categories")
-  .select("*")
-  .eq("is_visible",true)
-  .order("sort_order");
-
- if(error){msg(error.message);return}
-
+ const {data,error}=await db.from("panel_categories")
+  .select("*").eq("is_visible",true).order("sort_order");
+ if(error)throw error;
  el("categories").innerHTML=(data||[]).map(c=>
-  `<span class="category">${escapeHtml(c.name)}</span>`
+  `<span class="category">${esc(c.name)}</span>`
  ).join("")||"No categories available.";
-
  if(currentProfile.role==="admin")await renderAdminCategories();
 }
 
 async function loadSettings(){
- const {data,error}=await db
-  .from("site_settings")
-  .select("*")
-  .eq("id",1)
-  .single();
-
- if(error){msg(error.message);return}
-
+ const {data,error}=await db.from("site_settings")
+  .select("*").eq("id",1).maybeSingle();
+ if(error)throw error;
  if(data){
   el("announcement").textContent=data.announcement||"";
   el("announcementInput").value=data.announcement||"";
@@ -309,208 +263,156 @@ async function loadSettings(){
 }
 
 async function loadTransactions(){
- const {data,error}=await db
-  .from("royal_wallet_transactions")
-  .select("*")
-  .eq("user_id",currentUser.id)
-  .order("created_at",{ascending:false})
-  .limit(30);
-
- if(error){el("transactions").textContent=error.message;return}
-
+ const {data,error}=await db.from("royal_wallet_transactions")
+  .select("*").eq("user_id",currentUser.id)
+  .order("created_at",{ascending:false}).limit(30);
+ if(error)throw error;
  el("transactions").innerHTML=(data||[]).map(t=>
-  `<div class="item">
-   <b>${escapeHtml(t.account_mode)}</b> |
-   ${Number(t.amount).toFixed(2)}
-   <br>${escapeHtml(t.note||"")}
-   <br><small>${new Date(t.created_at).toLocaleString()}</small>
-  </div>`
+  `<div class="item"><b>${esc(t.account_mode)}</b> | ${Number(t.amount).toFixed(2)}
+  <br>${esc(t.note||"")}<br><span class="small">${new Date(t.created_at).toLocaleString()}</span></div>`
  ).join("")||"No activity yet.";
 }
 
 async function loadAdmin(){
- const {data:users,error}=await db
-  .from("royal_profiles")
-  .select("id,full_name,mobile,role,created_at")
-  .order("created_at",{ascending:false})
-  .limit(100);
+ if(currentProfile?.role!=="admin")return;
+ await safe(async()=>{
+  const {data:users,error}=await db.from("royal_profiles")
+   .select("id,full_name,mobile,role,created_at")
+   .order("created_at",{ascending:false}).limit(100);
+  if(error)throw error;
 
- if(error){msg("User list error: "+error.message);return}
+  el("adminStats").textContent="Registered users: "+users.length;
 
- el("adminStats").textContent="Registered users: "+users.length;
+  el("userList").innerHTML=(users||[]).map(u=>
+   `<div class="item">
+   <b>${esc(u.full_name||"User")}</b>
+   <br>Email/mobile: ${esc(u.mobile||"Not provided")}
+   <br>Role: ${esc(u.role)}
+   <br><span class="small">UUID: ${esc(u.id)}</span>
+   <br><button class="secondary" onclick="copyUserId('${u.id}')">COPY UUID</button>
+   <button onclick="selectCreditUser('${u.id}')">MANAGE CREDITS</button>
+   </div>`
+  ).join("")||"No users found.";
 
- el("userList").innerHTML=(users||[]).map(u=>
-  `<div class="item">
-   <b>${escapeHtml(u.full_name||"User")}</b>
-   <br>Mobile: ${escapeHtml(u.mobile||"")}
-   <br>Role: ${escapeHtml(u.role)}
-   <br><small>UUID: ${escapeHtml(u.id)}</small>
-   <button class="secondary" onclick="copyUserId('${u.id}')">COPY USER UUID</button>
-  </div>`
- ).join("")||"No users found.";
-
- const {data:tx,error:txError}=await db
-  .from("royal_wallet_transactions")
-  .select("*")
-  .order("created_at",{ascending:false})
-  .limit(50);
-
- if(txError){el("adminTransactions").textContent=txError.message;return}
-
- el("adminTransactions").innerHTML=(tx||[]).map(t=>
-  `<div class="item">
-   ${escapeHtml(t.account_mode)} |
-   ${Number(t.amount).toFixed(2)}
-   <br>${escapeHtml(t.note||"")}
-   <br><small>User UUID: ${escapeHtml(t.user_id)}</small>
-  </div>`
- ).join("")||"No transactions.";
+  const {data:tx,error:txError}=await db.from("royal_wallet_transactions")
+   .select("*").order("created_at",{ascending:false}).limit(50);
+  if(txError)throw txError;
+  el("adminTransactions").innerHTML=(tx||[]).map(t=>
+   `<div class="item">${esc(t.account_mode)} | ${Number(t.amount).toFixed(2)}
+   <br>${esc(t.note||"")}
+   <br><span class="small">User: ${esc(t.user_id)}</span></div>`
+  ).join("")||"No transactions.";
+ });
 }
 
 function copyUserId(id){
- if(navigator.clipboard){
-  navigator.clipboard.writeText(id).then(()=>msg("User UUID copied."));
- }else{
-  msg("UUID: "+id);
- }
+ if(navigator.clipboard?.writeText){
+  navigator.clipboard.writeText(id).then(()=>msg("UUID copied.")).catch(()=>msg("UUID: "+id));
+ }else msg("UUID: "+id);
+}
+function selectCreditUser(id){
+ el("targetUser").value=id;
+ showTab("credits");
+ msg("User selected. Ab virtual credits update karein.");
 }
 
 async function adjustCredits(){
- const userId=el("targetUser").value.trim();
- const amount=Number(el("creditAmount").value);
- const mode=el("creditMode").value;
- const note=el("creditNote").value.trim();
-
- if(!userId||!Number.isFinite(amount)||amount===0){
-  msg("User UUID aur valid amount daalo.");
-  return;
- }
-
- const {error}=await db.rpc("royal_adjust_wallet",{
-  p_user_id:userId,
-  p_mode:mode,
-  p_amount:amount,
-  p_note:note
+ await safe(async()=>{
+  if(currentProfile?.role!=="admin")throw new Error("Admin access required");
+  const userId=el("targetUser").value.trim();
+  const amount=Number(el("creditAmount").value);
+  const mode=el("creditMode").value;
+  const note=el("creditNote").value.trim();
+  if(!userId||!Number.isFinite(amount)||amount===0){
+   msg("User UUID aur valid amount daalein.");return;
+  }
+  const {error}=await db.rpc("royal_adjust_wallet",{
+   p_user_id:userId,p_mode:mode,p_amount:amount,p_note:note
+  });
+  if(error)throw error;
+  msg("Virtual balance updated.");
+  el("creditAmount").value="";
+  await loadAdmin();
+  await loadTransactions();
  });
-
- if(error){msg(error.message);return}
-
- msg("Virtual balance updated.");
- await loadAdmin();
- await loadTransactions();
 }
 
 async function addCategory(){
- const name=el("catName").value.trim();
- const description=el("catDesc").value.trim();
-
- if(!name){msg("Category name daalo.");return}
-
- const {error}=await db.from("panel_categories").insert({
-  name,description,is_visible:true
+ await safe(async()=>{
+  if(currentProfile?.role!=="admin")throw new Error("Admin access required");
+  const name=el("catName").value.trim();
+  const description=el("catDesc").value.trim();
+  if(!name){msg("Category name daalein.");return}
+  const {error}=await db.from("panel_categories").insert({
+   name,description,is_visible:true
+  });
+  if(error)throw error;
+  el("catName").value="";el("catDesc").value="";
+  msg("Category added.");
+  await loadCategories();
  });
-
- if(error){msg(error.message);return}
-
- el("catName").value="";
- el("catDesc").value="";
- msg("Category added.");
- await loadCategories();
 }
 
 async function toggleCategory(id,visible){
- const {error}=await db.from("panel_categories")
-  .update({is_visible:!visible})
-  .eq("id",id);
-
- if(error){msg(error.message);return}
- await loadCategories();
+ await safe(async()=>{
+  const {error}=await db.from("panel_categories")
+   .update({is_visible:!visible}).eq("id",id);
+  if(error)throw error;
+  await loadCategories();
+ });
 }
 
 async function deleteCategory(id){
  if(!confirm("Delete this category?"))return;
-
- const {error}=await db.from("panel_categories")
-  .delete().eq("id",id);
-
- if(error){msg(error.message);return}
- await loadCategories();
+ await safe(async()=>{
+  const {error}=await db.from("panel_categories").delete().eq("id",id);
+  if(error)throw error;
+  await loadCategories();
+ });
 }
 
 async function renderAdminCategories(){
- const {data,error}=await db
-  .from("panel_categories")
-  .select("*")
-  .order("sort_order");
-
- if(error){msg(error.message);return}
-
+ const {data,error}=await db.from("panel_categories")
+  .select("*").order("sort_order");
+ if(error)throw error;
  el("adminCategories").innerHTML=(data||[]).map(c=>
-  `<div class="item">
-   <b>${escapeHtml(c.name)}</b>
-   <br>${c.is_visible?"Visible":"Hidden"}
-   <button class="secondary" onclick="toggleCategory(${c.id},${c.is_visible})">
-    ${c.is_visible?"HIDE":"SHOW"}
-   </button>
-   <button class="danger" onclick="deleteCategory(${c.id})">DELETE</button>
-  </div>`
- ).join("");
+  `<div class="item"><b>${esc(c.name)}</b>
+  <br>${c.is_visible?"Visible":"Hidden"}
+  <button class="secondary" onclick="toggleCategory(${c.id},${c.is_visible})">${c.is_visible?"HIDE":"SHOW"}</button>
+  <button class="danger" onclick="deleteCategory(${c.id})">DELETE</button></div>`
+ ).join("")||"No categories.";
 }
 
 async function saveAnnouncement(){
- const announcement=el("announcementInput").value.trim();
-
- const {error}=await db.from("site_settings")
-  .update({
-   announcement,
-   updated_at:new Date().toISOString()
-  })
-  .eq("id",1);
-
- if(error){msg(error.message);return}
-
- msg("Announcement updated.");
- await loadSettings();
+ await safe(async()=>{
+  if(currentProfile?.role!=="admin")throw new Error("Admin access required");
+  const announcement=el("announcementInput").value.trim();
+  const {error}=await db.from("site_settings")
+   .update({announcement,updated_at:new Date().toISOString()})
+   .eq("id",1);
+  if(error)throw error;
+  msg("Announcement saved.");
+  await loadSettings();
+ });
 }
 
-function subscribeRealtime(){
- realtimeChannels.forEach(c=>db.removeChannel(c));
- realtimeChannels=[];
-
- const shared=db.channel("royal-shared-updates")
-  .on("postgres_changes",{
-   event:"*",schema:"public",table:"panel_categories"
-  },()=>loadCategories())
-  .on("postgres_changes",{
-   event:"*",schema:"public",table:"site_settings"
-  },()=>loadSettings())
-  .subscribe();
-
- realtimeChannels.push(shared);
-
- const personal=db.channel("royal-personal-updates")
-  .on("postgres_changes",{
-   event:"*",schema:"public",table:"royal_wallets",
-   filter:"user_id=eq."+currentUser.id
-  },()=>loadWallet())
-  .on("postgres_changes",{
-   event:"*",schema:"public",table:"royal_wallet_transactions",
-   filter:"user_id=eq."+currentUser.id
-  },()=>loadTransactions())
-  .subscribe();
-
- realtimeChannels.push(personal);
-}
-
-db.auth.onAuthStateChange((event,session)=>{
- if(session?.user && !currentUser){
-  setTimeout(()=>startApp(),0);
- }
-});
+window.login=login;
+window.register=register;
+window.logout=logout;
+window.showTab=showTab;
+window.adjustCredits=adjustCredits;
+window.addCategory=addCategory;
+window.toggleCategory=toggleCategory;
+window.deleteCategory=deleteCategory;
+window.saveAnnouncement=saveAnnouncement;
+window.copyUserId=copyUserId;
+window.selectCreditUser=selectCreditUser;
 
 (async()=>{
- const {data:{session}}=await db.auth.getSession();
- if(session)await startApp();
+ try{
+  const {data:{session}}=await db.auth.getSession();
+  if(session)await startApp();
+ }catch(e){msg("Startup error: "+e.message)}
 })();
 </script>
 </body>
