@@ -4,331 +4,208 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ROYAL EXCHANGE PRO</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *{box-sizing:border-box}
-body{margin:0;background:#080b12;color:white;font-family:Arial,sans-serif}
-header{background:#151a25;padding:18px;border-bottom:2px solid #d4aa45}
-h1{color:#e5bd59;font-size:23px;margin:0}
-small{color:#aaa}
-main{max-width:1100px;margin:auto;padding:16px}
-.card{background:#151a25;border:1px solid #34313a;border-radius:12px;padding:18px;margin:12px 0}
+body{margin:0;background:#080b12;color:white;font-family:Arial}
+header{background:#151a25;padding:20px;border-bottom:2px solid #d4aa45}
+h1,.gold{color:#e5bd59}
+main{max-width:1100px;margin:auto;padding:15px}
+.card{background:#151a25;border:1px solid #49402e;border-radius:12px;padding:18px;margin:12px 0}
 input,button{width:100%;padding:13px;margin:7px 0;border-radius:7px;border:1px solid #444;background:#090d16;color:white}
-button{background:#b58b32;color:#080b12;font-weight:bold;border:0;cursor:pointer}
-button.secondary{background:#303746;color:white}
-button.danger{background:#9d3434;color:white}
+button{background:#b58b32;color:#080b12;font-weight:bold;cursor:pointer}
+.secondary{background:#303746;color:white}
+.danger{background:#9d3434;color:white}
 .hidden{display:none}
-nav{display:flex;gap:7px;flex-wrap:wrap;margin:15px 0}
-nav button{width:auto;flex:1;min-width:100px}
-.stat{font-size:25px;color:#e5bd59;font-weight:bold}
-table{width:100%;border-collapse:collapse;min-width:650px}
-th,td{padding:10px;border-bottom:1px solid #34313a;text-align:left;font-size:13px}
-.tablewrap{overflow-x:auto}
-.gold{color:#e5bd59}
-#message{white-space:pre-wrap;color:#e5bd59;margin:10px 0}
+nav{display:flex;gap:6px;flex-wrap:wrap}
+nav button{width:auto;flex:1}
+.stat{font-size:26px;color:#e5bd59;font-weight:bold}
+.gamegrid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.game{background:#202635;border:1px solid #b58b32;padding:25px 10px;text-align:center;border-radius:12px}
+#message{color:#e5bd59;white-space:pre-wrap}
 </style>
 </head>
 <body>
 <header>
 <h1>ROYAL EXCHANGE PRO</h1>
-<small>ULTIMATE EXCHANGE MANAGEMENT SYSTEM</small>
+ULTIMATE EXCHANGE MANAGEMENT SYSTEM
 </header>
 <main>
 <div id="message"></div>
 
 <section id="login" class="card">
-<h2 class="gold">Admin Login</h2>
-<input id="email" type="email" placeholder="Admin Email">
+<h2 class="gold">Welcome</h2>
+<input id="username" placeholder="Username">
 <input id="password" type="password" placeholder="Password">
-<button onclick="loginAdmin()">ADMIN LOGIN</button>
-<button class="secondary" onclick="showRegister()">NEW USER? REGISTER</button>
-</section>
-
-<section id="register" class="card hidden">
-<h2 class="gold">Create User Account</h2>
-<input id="regName" placeholder="Full Name">
-<input id="regMobile" type="tel" placeholder="Mobile Number (+91XXXXXXXXXX)">
-<input id="regPassword" type="password" placeholder="Create Password (minimum 6 characters)">
-<button id="sendOtpButton" onclick="sendOTP()">SEND OTP</button>
-<div id="otpArea" class="hidden">
-<input id="otp" inputmode="numeric" maxlength="6" placeholder="Enter 6 Digit OTP">
-<button onclick="verifyOTP()">VERIFY OTP & REGISTER</button>
-</div>
-<button class="secondary" onclick="showLogin()">BACK TO LOGIN</button>
+<button onclick="login()">LOGIN</button>
+<button class="secondary" onclick="register()">CREATE DEMO ACCOUNT</button>
 </section>
 
 <section id="dashboard" class="hidden">
-<nav>
-<button onclick="showTab('home')">Dashboard</button>
-<button onclick="showTab('users')">Users</button>
-<button onclick="showTab('audit')">Audit Logs</button>
-<button class="danger" onclick="logout()">Logout</button>
-</nav>
+<nav id="navigation"></nav>
 
-<div id="home" class="tab">
-<div class="card">
-<h2 class="gold">Admin Dashboard</h2>
-<div>Total Users</div>
-<div class="stat" id="totalUsers">0</div>
-<div>Pending KYC</div>
-<div class="stat" id="pendingUsers">0</div>
-<div>Active Accounts</div>
-<div class="stat" id="activeUsers">0</div>
-<button onclick="loadUsers()">REFRESH DASHBOARD</button>
-</div>
+<div id="home" class="card">
+<h2 class="gold">Dashboard</h2>
+<p>Account Balance</p>
+<div class="stat" id="balance">10000</div>
+<p>Virtual Demo Credits</p>
 </div>
 
-<div id="users" class="tab hidden">
-<div class="card">
-<h2 class="gold">User Management</h2>
-<input id="search" placeholder="Search name or mobile" oninput="renderUsers()">
-<div class="tablewrap">
-<table>
-<thead><tr><th>Name</th><th>Mobile</th><th>KYC</th><th>Account</th><th>Actions</th></tr></thead>
-<tbody id="userRows"></tbody>
-</table>
+<div id="games" class="card">
+<h2 class="gold">Casino Games</h2>
+<div class="gamegrid">
+<div class="game">
+<h3>🎰 SLOT MACHINE</h3>
+<button onclick="playSlot()">PLAY</button>
+</div>
+<div class="game">
+<h3>🎲 DICE GAME</h3>
+<button onclick="playDice()">PLAY</button>
+</div>
+<div class="game">
+<h3>🃏 CARD GAME</h3>
+<button onclick="playCard()">PLAY</button>
+</div>
+<div class="game">
+<h3>🎯 LUCKY NUMBER</h3>
+<button onclick="playLucky()">PLAY</button>
 </div>
 </div>
 </div>
 
-<div id="audit" class="tab hidden">
-<div class="card">
-<h2 class="gold">Admin Audit History</h2>
-<div id="auditRows">Loading...</div>
+<div id="wallet" class="card">
+<h2 class="gold">Demo Wallet</h2>
+<input id="amount" type="number" placeholder="Enter demo credits">
+<button onclick="addCredits()">ADD DEMO CREDITS</button>
+<button class="secondary" onclick="withdraw()">DEMO WITHDRAW REQUEST</button>
+<p id="walletMessage"></p>
 </div>
+
+<div id="admin" class="card hidden">
+<h2 class="gold">Admin Panel</h2>
+<p>Total Users: <span id="users">0</span></p>
+<button onclick="showUsers()">VIEW USERS</button>
+<div id="userList"></div>
 </div>
+
+<div id="history" class="card">
+<h2 class="gold">Game History</h2>
+<div id="records"></div>
+</div>
+
+<button class="danger" onclick="logout()">LOGOUT</button>
 </section>
 </main>
 
 <script>
-const SUPABASE_URL="https://lsuscsonxyomusbpzxxt.supabase.co";
-const SUPABASE_KEY="sb_publishable_p2Lhw8xmGstxTUq2S-T-rg_5licR3Hq";
-const db=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+let accounts=JSON.parse(localStorage.getItem("royalAccounts")||"{}");
+let current="";
+let isAdmin=false;
+let credits=10000;
 
-let allUsers=[];
-let pendingPhone="";
-let pendingName="";
-
-function msg(t){
+function save(){
+ localStorage.setItem("royalAccounts",JSON.stringify(accounts));
+}
+function message(t){
  document.getElementById("message").textContent=t;
 }
-
-function showLogin(){
- document.getElementById("register").classList.add("hidden");
+function register(){
+ let u=prompt("Create username");
+ if(!u)return;
+ let p=prompt("Create password");
+ if(!p)return;
+ if(accounts[u])return message("Username already exists");
+ accounts[u]={password:p,balance:10000,history:[]};
+ save();
+ message("Demo account created. Login now.");
+}
+function login(){
+ let u=document.getElementById("username").value.trim();
+ let p=document.getElementById("password").value;
+ if(u==="admin"&&p==="admin123"){
+ current=u;isAdmin=true;openDashboard();return;
+ }
+ if(!accounts[u]||accounts[u].password!==p)
+ return message("Invalid login");
+ current=u;isAdmin=false;openDashboard();
+}
+function openDashboard(){
+ document.getElementById("login").classList.add("hidden");
+ document.getElementById("dashboard").classList.remove("hidden");
+ let nav=document.getElementById("navigation");
+ nav.innerHTML="";
+ ["home","games","wallet","history"].forEach(x=>{
+ let b=document.createElement("button");
+ b.textContent=x.toUpperCase();
+ b.onclick=()=>show(x);
+ nav.appendChild(b);
+ });
+ if(isAdmin){
+ let b=document.createElement("button");
+ b.textContent="ADMIN";
+ b.onclick=()=>show("admin");
+ nav.appendChild(b);
+ }
+ refresh();
+ show("home");
+}
+function show(id){
+ ["home","games","wallet","admin","history"].forEach(x=>{
+ document.getElementById(x).classList.add("hidden");
+ });
+ document.getElementById(id).classList.remove("hidden");
+}
+function refresh(){
+ if(!isAdmin){
+ document.getElementById("balance").textContent=accounts[current].balance.toFixed(2);
+ document.getElementById("records").innerHTML=
+ accounts[current].history.map(x=>"<p>"+x+"</p>").join("");
+ }
+}
+function play(type){
+ if(isAdmin)return message("Admin cannot play games");
+ let a=accounts[current];
+ let bet=Number(prompt("Enter demo credits to play"));
+ if(!Number.isFinite(bet)||bet<=0||bet>10000)return;
+ if(bet>a.balance)return message("Insufficient demo credits");
+ let won=Math.random()>.5;
+ let result=won?bet:-bet;
+ a.balance+=result;
+ a.history.unshift(type+": "+(won?"WIN +":"LOSS ")+Math.abs(result));
+ save();refresh();
+ alert(type+": "+(won?"DEMO WIN!":"DEMO LOSS!"));
+}
+function playSlot(){play("Slot Machine")}
+function playDice(){play("Dice Game")}
+function playCard(){play("Card Game")}
+function playLucky(){play("Lucky Number")}
+function addCredits(){
+ if(isAdmin)return;
+ let n=Number(document.getElementById("amount").value);
+ if(!Number.isFinite(n)||n<=0||n>1000000)return message("Invalid amount");
+ accounts[current].history.unshift("Demo credit request: "+n);
+ save();refresh();
+ document.getElementById("walletMessage").textContent="Demo credit request recorded. No real money added.";
+}
+function withdraw(){
+ if(isAdmin)return;
+ let n=Number(document.getElementById("amount").value);
+ if(!Number.isFinite(n)||n<=0)return;
+ accounts[current].history.unshift("Demo withdrawal request: "+n);
+ save();refresh();
+ document.getElementById("walletMessage").textContent="Demo withdrawal request recorded. No cash payout.";
+}
+function showUsers(){
+ if(!isAdmin)return;
+ document.getElementById("users").textContent=Object.keys(accounts).length;
+ document.getElementById("userList").innerHTML=Object.keys(accounts).map(u=>
+ "<p>"+u+" — "+accounts[u].balance.toFixed(2)+" demo credits</p>"
+ ).join("");
+}
+function logout(){
+ current="";isAdmin=false;
  document.getElementById("dashboard").classList.add("hidden");
  document.getElementById("login").classList.remove("hidden");
-}
-
-function showRegister(){
- document.getElementById("login").classList.add("hidden");
- document.getElementById("dashboard").classList.add("hidden");
- document.getElementById("register").classList.remove("hidden");
- msg("");
-}
-
-async function sendOTP(){
- const name=document.getElementById("regName").value.trim();
- let phone=document.getElementById("regMobile").value.trim();
- const password=document.getElementById("regPassword").value;
-
- if(!name)return msg("Full Name bhariye.");
- phone=phone.replace(/[\s-]/g,"");
- if(/^[6-9]\d{9}$/.test(phone))phone="+91"+phone;
- if(!/^\+91[6-9]\d{9}$/.test(phone))
-  return msg("Sahi Indian mobile number bhariye.");
- if(password.length<6)return msg("Password kam se kam 6 characters ka hona chahiye.");
-
- pendingPhone=phone;
- pendingName=name;
- msg("OTP bheja ja raha hai...");
-
- const {data,error}=await db.auth.signUp({
-  phone:phone,
-  password:password,
-  options:{data:{full_name:name}}
- });
-
- if(error)return msg("OTP error: "+error.message);
-
- document.getElementById("otpArea").classList.remove("hidden");
- document.getElementById("sendOtpButton").disabled=true;
- msg("OTP request bhej di gayi hai. Mobile par OTP check karein.");
-}
-
-async function verifyOTP(){
- const token=document.getElementById("otp").value.trim();
- if(!/^\d{6}$/.test(token))return msg("6 digit OTP bhariye.");
-
- msg("OTP verify ho raha hai...");
-
- const {data,error}=await db.auth.verifyOtp({
-  phone:pendingPhone,
-  token:token,
-  type:"sms"
- });
-
- if(error)return msg("OTP verification error: "+error.message);
-
- const user=data.user;
- if(!user)return msg("User verification nahi ho saka.");
-
- const {error:insertError}=await db.from("users").insert({
-  user_id:user.id,
-  full_name:pendingName,
-  mobile:pendingPhone,
-  status:"pending",
-  kyc_status:"pending",
-  account_status:"active"
- });
-
- if(insertError){
-  msg("Account verify hua, lekin user record save nahi hua: "+insertError.message);
-  return;
- }
-
- await db.auth.signOut();
- document.getElementById("regName").value="";
- document.getElementById("regMobile").value="";
- document.getElementById("regPassword").value="";
- document.getElementById("otp").value="";
- document.getElementById("otpArea").classList.add("hidden");
- document.getElementById("sendOtpButton").disabled=false;
- pendingPhone="";
- pendingName="";
- showLogin();
- msg("Registration successful. Admin approval ka intezar karein.");
-}
-
-async function loginAdmin(){
- const email=document.getElementById("email").value.trim();
- const password=document.getElementById("password").value;
- if(!email||!password)return msg("Email aur password bhariye.");
-
- msg("Logging in...");
- const {error}=await db.auth.signInWithPassword({email,password});
- if(error)return msg(error.message);
-
- const {data:admin,error:adminError}=await db.rpc("is_admin");
- if(adminError||!admin){
-  await db.auth.signOut();
-  return msg("Admin access nahi mila.");
- }
-
- document.getElementById("login").classList.add("hidden");
- document.getElementById("register").classList.add("hidden");
- document.getElementById("dashboard").classList.remove("hidden");
- msg("Admin login successful.");
- await loadUsers();
-}
-
-async function logout(){
- await db.auth.signOut();
- showLogin();
- msg("Logged out.");
-}
-
-function showTab(id){
- document.querySelectorAll(".tab").forEach(x=>x.classList.add("hidden"));
- document.getElementById(id).classList.remove("hidden");
- if(id==="users")renderUsers();
- if(id==="audit")loadAudit();
-}
-
-async function loadUsers(){
- const {data,error}=await db.from("users")
- .select("id,user_id,full_name,mobile,status,kyc_status,account_status,created_at")
- .order("created_at",{ascending:false});
-
- if(error)return msg("Users error: "+error.message);
-
- allUsers=data||[];
- document.getElementById("totalUsers").textContent=allUsers.length;
- document.getElementById("pendingUsers").textContent=
- allUsers.filter(u=>(u.kyc_status||"pending")==="pending").length;
- document.getElementById("activeUsers").textContent=
- allUsers.filter(u=>(u.account_status||"active")==="active").length;
- renderUsers();
-}
-
-function esc(v){
- return String(v??"").replace(/[&<>"']/g,c=>({
- "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
- }[c]));
-}
-
-function renderUsers(){
- const q=(document.getElementById("search").value||"").toLowerCase();
- const rows=allUsers.filter(u=>
- (u.full_name||"").toLowerCase().includes(q)||
- (u.mobile||"").toLowerCase().includes(q));
-
- document.getElementById("userRows").innerHTML=rows.map(u=>`
- <tr>
- <td>${esc(u.full_name)}</td>
- <td>${esc(u.mobile)}</td>
- <td>${esc(u.kyc_status||"pending")}</td>
- <td>${esc(u.account_status||"active")}</td>
- <td>
- <button onclick="changeKyc('${u.user_id}','approved')">Approve KYC</button>
- <button class="danger" onclick="changeKyc('${u.user_id}','rejected')">Reject KYC</button>
- <button class="secondary" onclick="toggleAccount('${u.user_id}','${u.account_status||"active"}')">
- ${(u.account_status||"active")==="active"?"Suspend":"Activate"}
- </button>
- </td>
- </tr>`).join("");
-}
-
-async function changeKyc(userId,status){
- if(!userId)return msg("User ID missing.");
- if(!confirm("KYC "+status+" karna hai?"))return;
-
- const {error}=await db.from("users")
- .update({kyc_status:status}).eq("user_id",userId);
-
- if(error)return msg(error.message);
- await audit("KYC "+status,userId);
- msg("KYC status updated.");
- await loadUsers();
-}
-
-async function toggleAccount(userId,current){
- const next=current==="active"?"suspended":"active";
- if(!confirm("Account "+next+" karna hai?"))return;
-
- const {error}=await db.from("users")
- .update({account_status:next}).eq("user_id",userId);
-
- if(error)return msg(error.message);
- await audit("Account "+next,userId);
- msg("Account status updated.");
- await loadUsers();
-}
-
-async function audit(action,userId){
- const {data:{user}}=await db.auth.getUser();
- const {error}=await db.from("admin_audit_logs").insert({
-  admin_id:user.id,
-  action:action,
-  target_user_id:userId,
-  details:"Admin panel action"
- });
- if(error)msg("Audit log error: "+error.message);
-}
-
-async function loadAudit(){
- const {data,error}=await db.from("admin_audit_logs")
- .select("action,target_user_id,details,created_at")
- .order("created_at",{ascending:false}).limit(100);
-
- if(error){
-  document.getElementById("auditRows").textContent=error.message;
-  return;
- }
-
- document.getElementById("auditRows").innerHTML=(data||[]).map(x=>
- `<p>${esc(x.action)} — ${esc(x.target_user_id)}<br>
- <small>${esc(x.created_at)}</small></p>`
- ).join("")||"No audit records.";
+ message("Logged out");
 }
 </script>
 </body>
