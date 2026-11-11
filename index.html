@@ -192,7 +192,7 @@ footer{text-align:center;padding:25px;color:#777;font-size:11px}
   </div>
   <div id="credits" class="adminTab card hidden">
    <h2>Manage Virtual Credits</h2>
-   <input id="targetUser" placeholder="User UUID">
+   <select id="targetUser"><option value="">Select Member by Name</option></select>
    <select id="creditMode"><option value="demo">Demo Credits</option><option value="original">Original Virtual Points</option></select>
    <input id="creditAmount" type="number" step="0.01" placeholder="Positive = Add (CR), Negative = Deduct (DR)">
    <input id="creditNote" placeholder="Reason / note">
@@ -341,17 +341,22 @@ async function loadAdmin(){
  await safe(async()=>{
   const {data:users,error}=await db.from("royal_profiles").select("id,full_name,mobile,role,created_at,last_seen").order("created_at",{ascending:false}).limit(100);
   if(error)throw error;cachedUsers=users||[];
+  const targetSelect=el("targetUser");
+  const previousTarget=targetSelect.value;
+  targetSelect.innerHTML='<option value="">Select Member by Name</option>'+
+   cachedUsers.map(u=>`<option value="${esc(u.id)}">${esc(u.full_name||"Member")} · ${esc(u.mobile||"No mobile")}</option>`).join("");
+  if(cachedUsers.some(u=>u.id===previousTarget))targetSelect.value=previousTarget;
   const onlineCount=cachedUsers.filter(u=>u.last_seen&&(Date.now()-new Date(u.last_seen).getTime())<120000).length;
   el("adminStats").innerHTML="Registered users: <b>"+cachedUsers.length+"</b><br>Online now: <b class='gold'>"+onlineCount+"</b>";filterUsers();
   const {data:tx,error:txError}=await db.from("royal_wallet_transactions").select("*").order("created_at",{ascending:false}).limit(50);
   if(txError)throw txError;
-  el("adminTransactions").innerHTML=(tx||[]).map(t=>`<div class="item">${esc(t.account_mode)} · <b class="${transactionClass(t.amount)}">${transactionType(t.amount)}</b> | <span class="${transactionClass(t.amount)}">${transactionValue(t.amount)}</span><br>${esc(t.note||"")}<br><span class="small">User: ${esc(t.user_id)}</span><br><span class="small">${t.created_at?new Date(t.created_at).toLocaleString():""}</span></div>`).join("")||"No transactions.";
+  el("adminTransactions").innerHTML=(tx||[]).map(t=>`<div class="item">${esc(t.account_mode)} · <b class="${transactionClass(t.amount)}">${transactionType(t.amount)}</b> | <span class="${transactionClass(t.amount)}">${transactionValue(t.amount)}</span><br>${esc(t.note||"")}<br><span class="small">Member: ${esc(cachedUsers.find(u=>u.id===t.user_id)?.full_name||"Member")}</span><br><span class="small">${t.created_at?new Date(t.created_at).toLocaleString():""}</span></div>`).join("")||"No transactions.";
  });
 }
 function filterUsers(){
  const query=(el("userSearch")?.value||"").trim().toLowerCase();
  const filtered=cachedUsers.filter(u=>[u.full_name,u.mobile,u.id,u.role].some(v=>String(v||"").toLowerCase().includes(query)));
- el("userList").innerHTML=filtered.map(u=>`<div class="item"><b>${esc(u.full_name||"User")}</b><br>Mobile: ${esc(u.mobile||"Not provided")}<br>Role: ${esc(u.role)}<br>Status: <b class="${u.last_seen&&(Date.now()-new Date(u.last_seen).getTime())<120000?"gold":"small"}">${u.last_seen&&(Date.now()-new Date(u.last_seen).getTime())<120000?"ONLINE":"OFFLINE"}</b><br>Last seen: ${esc(u.last_seen?new Date(u.last_seen).toLocaleString():"Never")}<br><span class="small">UUID: ${esc(u.id)}</span><div class="adminAction"><button class="secondary" data-action="view-user" data-id="${esc(u.id)}">VIEW DETAILS</button><button class="secondary" data-action="copy-user" data-id="${esc(u.id)}">COPY UUID</button><button data-action="manage-user" data-id="${esc(u.id)}">MANAGE CREDITS</button></div></div>`).join("")||"No users found.";
+ el("userList").innerHTML=filtered.map(u=>`<div class="item"><b>${esc(u.full_name||"User")}</b><br>Mobile: ${esc(u.mobile||"Not provided")}<br>Role: ${esc(u.role)}<br>Status: <b class="${u.last_seen&&(Date.now()-new Date(u.last_seen).getTime())<120000?"gold":"small"}">${u.last_seen&&(Date.now()-new Date(u.last_seen).getTime())<120000?"ONLINE":"OFFLINE"}</b><br>Last seen: ${esc(u.last_seen?new Date(u.last_seen).toLocaleString():"Never")}<div class="adminAction"><button class="secondary" data-action="view-user" data-id="${esc(u.id)}">VIEW DETAILS</button><button class="secondary" data-action="copy-user" data-id="${esc(u.id)}">COPY UUID</button><button data-action="manage-user" data-id="${esc(u.id)}">MANAGE CREDITS</button></div></div>`).join("")||"No users found.";
 }
 async function viewUserDetails(id){
  const user=cachedUsers.find(u=>u.id===id);if(!user)return;
@@ -380,15 +385,18 @@ async function adjustCredits(){
   const amount=Number(el("creditAmount").value);
   const mode=el("creditMode").value;
   const note=el("creditNote").value.trim();
-  if(!userId||!Number.isFinite(amount)||amount===0){msg("Enter user UUID and valid amount.");return}
+  if(!userId||!Number.isFinite(amount)||amount===0){msg("Select a member and enter a valid amount.");return}
   const balanceColumn=mode==="demo"?"demo_balance":"original_points";
   const {data:walletData,error:walletError}=await db.from("royal_wallets").select(balanceColumn).eq("user_id",userId).maybeSingle();
   if(walletError)throw walletError;
   const currentBalance=Number(walletData?.[balanceColumn]||0);
   const newBalance=currentBalance+amount;
   if(newBalance<0){msg("Insufficient virtual balance. Current balance: "+money(currentBalance));return}
+  const selectedUser=cachedUsers.find(u=>u.id===userId);
+  const memberName=selectedUser?.full_name||"Member";
   const action=amount>0?"CREDIT (CR)":"DEBIT (DR)";
   const confirmation="Confirm virtual points adjustment?\n\n"+
+   "Member: "+memberName+"\n"+
    "Account: "+(mode==="demo"?"Demo Credits":"Original Virtual Points")+"\n"+
    "Current Balance: "+money(currentBalance)+"\n"+
    (amount>0?"Add Amount: ":"Deduct Amount: ")+money(Math.abs(amount))+"\n"+
@@ -397,7 +405,7 @@ async function adjustCredits(){
   if(!confirm(confirmation))return;
   const {error}=await db.rpc("royal_adjust_wallet",{p_user_id:userId,p_mode:mode,p_amount:amount,p_note:note});
   if(error)throw error;
-  msg("Virtual balance updated. New balance: "+money(newBalance));
+  msg("Virtual balance updated for "+memberName+". New balance: "+money(newBalance));
   el("creditAmount").value="";
   await loadAdmin();await loadTransactions();await loadWallet();await viewUserDetails(userId);
  });
