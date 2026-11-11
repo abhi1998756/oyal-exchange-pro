@@ -15,7 +15,6 @@ async function adjustCredits(){
    return;
   }
 
-  // Current virtual balance read karo
   const balanceColumn=mode==="demo"
    ? "demo_balance"
    : "original_points";
@@ -31,7 +30,6 @@ async function adjustCredits(){
   const currentBalance=Number(walletData?.[balanceColumn]||0);
   const newBalance=currentBalance+amount;
 
-  // Negative balance allow nahi hoga
   if(newBalance<0){
    msg("Insufficient virtual balance. Current balance: "+money(currentBalance));
    return;
@@ -39,7 +37,6 @@ async function adjustCredits(){
 
   const action=amount>0?"CREDIT (CR)":"DEBIT (DR)";
 
-  // Confirmation mein poora calculation
   const confirmation=
    "Confirm virtual points adjustment?\n\n"+
    "Account: "+(mode==="demo"?"Demo Credits":"Original Virtual Points")+"\n"+
@@ -50,7 +47,6 @@ async function adjustCredits(){
 
   if(!confirm(confirmation)) return;
 
-  // Database mein adjustment
   const {error}=await db.rpc("royal_adjust_wallet",{
    p_user_id:userId,
    p_mode:mode,
@@ -61,8 +57,8 @@ async function adjustCredits(){
   if(error) throw error;
 
   msg("Virtual balance updated. New balance: "+money(newBalance));
-
   el("creditAmount").value="";
+
   await loadAdmin();
   await loadTransactions();
   await loadWallet();
