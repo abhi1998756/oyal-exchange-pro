@@ -267,6 +267,11 @@ function esc(v){
 }
 function money(v){return Number(v||0).toFixed(2)}
 
+/* CR / DR DISPLAY */
+function transactionType(amount){return Number(amount)<0?"DR":"CR"}
+function transactionValue(amount){return money(Math.abs(Number(amount)||0))}
+function transactionColor(amount){return Number(amount)<0?"#ff7777":"#7bd88f"}
+
 async function safe(fn){
  try{await fn()}
  catch(e){console.error(e);msg("Error: "+(e.message||e))}
@@ -457,7 +462,10 @@ async function loadTransactions(){
  const {data,error}=await db.from("royal_wallet_transactions").select("*").eq("user_id",currentUser.id).order("created_at",{ascending:false}).limit(30);
  if(error)throw error;
  el("transactions").innerHTML=(data||[]).map(t=>`
-  <div class="item"><b>${esc(t.account_mode)}</b> | ${money(t.amount)}
+  <div class="item">
+   <b>${esc(t.account_mode)}</b> ·
+   <b style="color:${transactionColor(t.amount)}">${transactionType(t.amount)}</b>
+   | ${transactionValue(t.amount)}
    <br>${esc(t.note||"")}
    <br><span class="small">${t.created_at?new Date(t.created_at).toLocaleString():""}</span>
   </div>`).join("")||"No activity yet.";
@@ -487,7 +495,10 @@ async function loadAdmin(){
   if(txError)throw txError;
 
   el("adminTransactions").innerHTML=(tx||[]).map(t=>`
-   <div class="item">${esc(t.account_mode)} | ${money(t.amount)}
+   <div class="item">
+    ${esc(t.account_mode)} ·
+    <b style="color:${transactionColor(t.amount)}">${transactionType(t.amount)}</b>
+    | ${transactionValue(t.amount)}
     <br>${esc(t.note||"")}
     <br><span class="small">User: ${esc(t.user_id)}</span>
     <br><span class="small">${t.created_at?new Date(t.created_at).toLocaleString():""}</span>
@@ -515,7 +526,7 @@ function filterUsers(){
   </div>`).join("")||"No users found.";
 }
 
-/* NEW: USER DETAILS + WALLET + LAST 20 TRANSACTIONS */
+/* USER DETAILS + WALLET + LAST 20 TRANSACTIONS */
 async function viewUserDetails(id){
  const user=cachedUsers.find(u=>u.id===id);
  if(!user)return;
@@ -559,7 +570,9 @@ async function viewUserDetails(id){
    <h3>Transaction History (Latest 20)</h3>
    ${tx.map(t=>`
     <div class="item">
-     <b>${esc(t.account_mode)}</b> | ${money(t.amount)}
+     <b>${esc(t.account_mode)}</b> ·
+     <b style="color:${transactionColor(t.amount)}">${transactionType(t.amount)}</b>
+     | ${transactionValue(t.amount)}
      <br>${esc(t.note||"No note")}
      <br><span class="small">${esc(t.created_at?new Date(t.created_at).toLocaleString():"")}</span>
     </div>`).join("")||"No transactions for this user."}
