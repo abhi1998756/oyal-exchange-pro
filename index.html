@@ -253,6 +253,7 @@ let currentProfile=null;
 let wallet=null;
 let currentGame="";
 let cachedUsers=[];
+let presenceTimer=null;
 
 const el=id=>document.getElementById(id);
 
@@ -407,6 +408,7 @@ async function login(){
 
 async function logout(){
  await safe(async()=>{
+  if(presenceTimer){clearInterval(presenceTimer);presenceTimer=null;}
   const {error}=await db.auth.signOut();
   if(error)throw error;
 
@@ -423,7 +425,19 @@ async function logout(){
  });
 }
 
-/* APP START */
+/* PRESENCE + APP START */
+async function touchPresence(){
+ if(!currentUser)return;
+ const {error}=await db.rpc('royal_touch_presence');
+ if(error)console.warn('Presence update failed:',error.message);
+}
+function startPresence(){
+ if(presenceTimer)clearInterval(presenceTimer);
+ touchPresence();
+ presenceTimer=setInterval(touchPresence,60000);
+}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)touchPresence()});
+
 async function startApp(){
  const {data:{user},error:userError}=await db.auth.getUser();
  if(userError||!user)throw userError||new Error("Login required");
@@ -440,6 +454,7 @@ async function startApp(){
  if(!profile)throw new Error("User profile not found.");
 
  currentProfile=profile;
+ startPresence();
 
  el("auth").classList.add("hidden");
  el("app").classList.remove("hidden");
@@ -556,14 +571,15 @@ async function loadAdmin(){
  await safe(async()=>{
   const {data:users,error}=await db
    .from("royal_profiles")
-   .select("id,full_name,mobile,role,created_at")
+   .select("id,full_name,mobile,role,created_at,last_seen")
    .order("created_at",{ascending:false})
    .limit(100);
 
   if(error)throw error;
 
   cachedUsers=users||[];
-  el("adminStats").textContent="Registered users: "+cachedUsers.length;
+  const onlineCount=cachedUsers.filter(u=>u.last_seen&&(Date.now()-new Date(u.last_seen).getTime())<120000).length;
+  el("adminStats").innerHTML="Registered users: <b>"+cachedUsers.length+"</b><br>Online now: <b class=\"gold\">"+onlineCount+"</b>";
   filterUsers();
 
   const {data:tx,error:txError}=await db
@@ -601,6 +617,8 @@ function filterUsers(){
    <b>${esc(u.full_name||"User")}</b>
    <br>Mobile: ${esc(u.mobile||"Not provided")}
    <br>Role: ${esc(u.role)}
+   <br>Status: <b class="${u.last_seen&&(Date.now()-new Date(u.last_seen).getTime())<120000?"gold":"small"}">${u.last_seen&&(Date.now()-new Date(u.last_seen).getTime())<120000?"ONLINE":"OFFLINE"}</b>
+   <br>Last seen: ${esc(u.last_seen?new Date(u.last_seen).toLocaleString():"Never")}
    <br><span class="small">UUID: ${esc(u.id)}</span>
    <div class="adminAction">
     <button class="secondary" data-action="copy-user" data-id="${esc(u.id)}">COPY UUID</button>
