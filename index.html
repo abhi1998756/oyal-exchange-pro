@@ -78,6 +78,7 @@ footer{text-align:center;padding:25px;color:#777;font-size:11px}
 </header>
 <main>
 <div id="message">Welcome to Royal Exchange Pro</div>
+
 <section id="auth" class="card">
  <h2>👑 MEMBER LOGIN</h2>
  <input id="email" type="email" placeholder="Email address" autocomplete="email">
@@ -85,10 +86,12 @@ footer{text-align:center;padding:25px;color:#777;font-size:11px}
  <div id="registerFields">
   <input id="fullName" placeholder="Full name">
   <input id="mobile" placeholder="Mobile number">
+  <input id="inviteCode" placeholder="Admin Member Code">
  </div>
  <button id="loginButton" onclick="login()">LOGIN</button>
  <button id="registerButton" class="secondary" onclick="register()">CREATE ACCOUNT</button>
 </section>
+
 <section id="app" class="hidden">
  <div class="card">
   <div class="sectionTitle">
@@ -96,6 +99,7 @@ footer{text-align:center;padding:25px;color:#777;font-size:11px}
    <button class="secondary" onclick="logout()">LOGOUT</button>
   </div>
  </div>
+
  <section id="userPanel">
   <div class="nav">
    <button onclick="showUserTab('homeTab')">HOME</button>
@@ -103,6 +107,7 @@ footer{text-align:center;padding:25px;color:#777;font-size:11px}
    <button onclick="showUserTab('cricketTab')">CRICKET</button>
    <button onclick="showUserTab('accountTab')">ACCOUNT</button>
   </div>
+
   <div id="homeTab" class="userTab active">
    <div class="hero">
     <div class="eyebrow">WELCOME TO THE ROYAL CLUB</div>
@@ -123,6 +128,7 @@ footer{text-align:center;padding:25px;color:#777;font-size:11px}
     </div>
    </div>
   </div>
+
   <div id="casinoTab" class="userTab">
    <div class="card">
     <div class="eyebrow">ROYAL GAME LOUNGE</div>
@@ -146,6 +152,7 @@ footer{text-align:center;padding:25px;color:#777;font-size:11px}
     <button class="secondary" onclick="closeGame()">BACK TO LOBBY</button>
    </div>
   </div>
+
   <div id="cricketTab" class="userTab">
    <div class="card">
     <div class="eyebrow">SPORTS CENTRE</div>
@@ -156,6 +163,7 @@ footer{text-align:center;padding:25px;color:#777;font-size:11px}
     <button onclick="loadCricket()">REFRESH</button>
    </div>
   </div>
+
   <div id="accountTab" class="userTab">
    <div class="card">
     <h2>MY VIRTUAL WALLET</h2>
@@ -172,6 +180,7 @@ footer{text-align:center;padding:25px;color:#777;font-size:11px}
    <div class="card"><h2>MY ACTIVITY</h2><div id="transactions">Loading...</div></div>
   </div>
  </section>
+
  <section id="adminPanel" class="hidden">
   <div class="card">
    <h2>👑 ADMIN CONTROL PANEL</h2>
@@ -183,13 +192,29 @@ footer{text-align:center;padding:25px;color:#777;font-size:11px}
     <button onclick="showTab('settingsTab')">Settings</button>
    </div>
   </div>
-  <div id="dashboard" class="adminTab card"><h2>Dashboard</h2><div id="adminStats">Loading...</div><button onclick="loadAdmin()">REFRESH</button></div>
+
+  <div id="dashboard" class="adminTab card">
+   <h2>Dashboard</h2>
+   <div id="adminStats">Loading...</div>
+   <button onclick="loadAdmin()">REFRESH</button>
+  </div>
+
   <div id="users" class="adminTab card hidden">
    <h2>User Management</h2>
    <input id="userSearch" placeholder="Search by name, mobile or UUID" oninput="filterUsers()">
    <div id="userList">Loading...</div>
    <div id="userDetails" class="card hidden"></div>
+
+   <div class="card">
+    <h3>ADD NEW MEMBER</h3>
+    <input id="inviteName" placeholder="Member full name">
+    <input id="inviteMobile" placeholder="Mobile number">
+    <button onclick="createMemberInvite()">GENERATE MEMBER ID / CODE</button>
+    <div id="inviteResult" class="small"></div>
+    <p class="small">Share this one-time code with the member. They will register with their own email and password.</p>
+   </div>
   </div>
+
   <div id="credits" class="adminTab card hidden">
    <h2>Manage Virtual Credits</h2>
    <select id="targetUser"><option value="">Select Member by Name</option></select>
@@ -199,6 +224,7 @@ footer{text-align:center;padding:25px;color:#777;font-size:11px}
    <button onclick="adjustCredits()">UPDATE BALANCE</button>
    <p class="small">Positive amount = CR (Credit). Negative amount = DR (Debit).</p>
   </div>
+
   <div id="categoriesTab" class="adminTab card hidden">
    <h2>Manage Categories</h2>
    <input id="catName" placeholder="Category name">
@@ -206,22 +232,29 @@ footer{text-align:center;padding:25px;color:#777;font-size:11px}
    <button onclick="addCategory()">ADD CATEGORY</button>
    <div id="adminCategories"></div>
   </div>
+
   <div id="settingsTab" class="adminTab card hidden">
    <h2>Website Announcement</h2>
    <input id="announcementInput" placeholder="Enter announcement">
    <button onclick="saveAnnouncement()">SAVE ANNOUNCEMENT</button>
   </div>
+
   <div class="card"><h2>Recent Virtual Transactions</h2><div id="adminTransactions"></div></div>
  </section>
 </section>
 </main>
+
 <footer>ROYAL EXCHANGE PRO · DEMO ENTERTAINMENT PLATFORM</footer>
+
 <script>
 "use strict";
+
 const SUPABASE_URL="https://lsuscsonxyomusbpzxxt.supabase.co";
 const SUPABASE_KEY="sb_publishable_p2Lhw8xmGstxTUq2S-T-rg_5licR3Hq";
 const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+
 let currentUser=null,currentProfile=null,wallet=null,currentGame="",cachedUsers=[],presenceTimer=null;
+
 const el=id=>document.getElementById(id);
 function msg(t){el("message").textContent=String(t)}
 function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
@@ -229,172 +262,465 @@ function money(v){return Number(v||0).toFixed(2)}
 function transactionType(amount){return Number(amount)<0?"DR":"CR"}
 function transactionValue(amount){const n=Number(amount)||0;return(n<0?"−":"+")+money(Math.abs(n))}
 function transactionClass(amount){return Number(amount)<0?"drAmount":"crAmount"}
-async function safe(fn){try{await fn()}catch(e){console.error(e);msg("Error: "+(e.message||e))}}
+
+async function safe(fn){
+ try{await fn()}
+ catch(e){console.error(e);msg("Error: "+(e.message||e))}
+}
+
 function setBusy(buttonId,busy,label){
- const b=el(buttonId);if(!b)return;b.disabled=busy;
+ const b=el(buttonId);
+ if(!b)return;
+ b.disabled=busy;
  if(busy){b.dataset.oldText=b.textContent;b.textContent=label||"PLEASE WAIT..."}
  else{b.textContent=b.dataset.oldText||b.textContent}
 }
+
 function showUserTab(id){
  document.querySelectorAll(".userTab").forEach(x=>x.classList.remove("active"));
- el(id).classList.add("active");if(id!=="casinoTab")closeGame();
+ el(id).classList.add("active");
+ if(id!=="casinoTab")closeGame();
 }
+
 function showTab(id){
  document.querySelectorAll(".adminTab").forEach(x=>x.classList.add("hidden"));
- el(id).classList.remove("hidden");if(id==="users")loadAdmin();if(id==="categoriesTab")renderAdminCategories();
+ el(id).classList.remove("hidden");
+ if(id==="users")loadAdmin();
+ if(id==="categoriesTab")renderAdminCategories();
 }
+
 const gameNames={slots:"ROYAL SLOTS",wheel:"ROYAL WHEEL",dice:"LUCKY DICE",cards:"ROYAL CARDS",number:"LUCKY NUMBER",treasure:"TREASURE BOX"};
+
 function openGame(game){
- if(!gameNames[game])return;currentGame=game;el("gameScreen").classList.remove("hidden");
- el("gameTitle").textContent=gameNames[game];el("gameDisplay").textContent="👑";
+ if(!gameNames[game])return;
+ currentGame=game;
+ el("gameScreen").classList.remove("hidden");
+ el("gameTitle").textContent=gameNames[game];
+ el("gameDisplay").textContent="👑";
  el("gameMessage").textContent="Press PLAY to start your free demo.";
- el("playButton").textContent="PLAY DEMO";el("gameScreen").scrollIntoView({behavior:"smooth",block:"center"});
+ el("playButton").textContent="PLAY DEMO";
+ el("gameScreen").scrollIntoView({behavior:"smooth",block:"center"});
 }
-function closeGame(){el("gameScreen").classList.add("hidden");currentGame=""}
+
+function closeGame(){
+ el("gameScreen").classList.add("hidden");
+ currentGame="";
+}
+
 function playGame(){
- const r=n=>Math.floor(Math.random()*n);let output="",message="Demo result generated. No credits were used.";
- if(currentGame==="slots"){const s=["🍒","🍋","⭐","💎","👑","🔔"];output=[s[r(s.length)],s[r(s.length)],s[r(s.length)]].join(" ");message="Your slot result is ready!"}
- else if(currentGame==="wheel"){const n=r(37);output=String(n);message=n===0?"The wheel stopped at zero!":"The wheel stopped at "+n+"."}
- else if(currentGame==="dice"){output="🎲 "+(r(6)+1);message="Your dice result is ready!"}
- else if(currentGame==="cards"){const suits=["♠","♥","♦","♣"],faces=["A","K","Q","J","10","9","8","7"];output=faces[r(faces.length)]+suits[r(suits.length)];message="You drew a card!"}
- else if(currentGame==="number"){output=String(r(100)+1);message="Your lucky number has been revealed!"}
- else if(currentGame==="treasure"){const boxes=["💎","👑","🏆","✨","💰"];output=boxes[r(boxes.length)];message="You opened the mystery box!"}
+ const r=n=>Math.floor(Math.random()*n);
+ let output="",message="Demo result generated. No credits were used.";
+
+ if(currentGame==="slots"){
+  const s=["🍒","🍋","⭐","💎","👑","🔔"];
+  output=[s[r(s.length)],s[r(s.length)],s[r(s.length)]].join(" ");
+  message="Your slot result is ready!";
+ }
+ else if(currentGame==="wheel"){
+  const n=r(37);output=String(n);
+  message=n===0?"The wheel stopped at zero!":"The wheel stopped at "+n+".";
+ }
+ else if(currentGame==="dice"){
+  output="🎲 "+(r(6)+1);message="Your dice result is ready!";
+ }
+ else if(currentGame==="cards"){
+  const suits=["♠","♥","♦","♣"],faces=["A","K","Q","J","10","9","8","7"];
+  output=faces[r(faces.length)]+suits[r(suits.length)];
+  message="You drew a card!";
+ }
+ else if(currentGame==="number"){
+  output=String(r(100)+1);message="Your lucky number has been revealed!";
+ }
+ else if(currentGame==="treasure"){
+  const boxes=["💎","👑","🏆","✨","💰"];
+  output=boxes[r(boxes.length)];message="You opened the mystery box!";
+ }
  else{msg("Select a game first.");return}
- el("gameDisplay").textContent=output;el("gameMessage").textContent=message;
+
+ el("gameDisplay").textContent=output;
+ el("gameMessage").textContent=message;
 }
+
+/* MEMBER REGISTRATION: Admin code required */
 async function register(){
  setBusy("registerButton",true,"CREATING...");
  await safe(async()=>{
-  const email=el("email").value.trim(),password=el("password").value;
-  const full_name=el("fullName").value.trim(),mobile=el("mobile").value.trim();
-  if(!email||password.length<6){msg("Enter email and password of at least 6 characters.");return}
-  const {data,error}=await db.auth.signUp({email,password,options:{data:{full_name,mobile}}});
-  if(error)throw error;if(data.session)await startApp();else msg("Registration successful. Verify your email, then login.");
+  const email=el("email").value.trim();
+  const password=el("password").value;
+  const full_name=el("fullName").value.trim();
+  const mobile=el("mobile").value.trim();
+  const invite_code=el("inviteCode").value.trim().toUpperCase();
+
+  if(!email||password.length<6){
+   msg("Enter email and password of at least 6 characters.");
+   return;
+  }
+  if(!invite_code){
+   msg("Enter the Member Code given by Admin.");
+   return;
+  }
+
+  const {data,error}=await db.auth.signUp({
+   email,
+   password,
+   options:{data:{full_name,mobile,invite_code}}
+  });
+
+  if(error)throw error;
+  if(data.session)await startApp();
+  else msg("Registration successful. Verify your email, then login.");
  });
  setBusy("registerButton",false);
 }
+
 async function login(){
  setBusy("loginButton",true,"LOGGING IN...");
  await safe(async()=>{
-  const email=el("email").value.trim(),password=el("password").value;
-  if(!email||!password){msg("Enter email and password.");return}
+  const email=el("email").value.trim();
+  const password=el("password").value;
+
+  if(!email||!password){
+   msg("Enter email and password.");
+   return;
+  }
+
   const {error}=await db.auth.signInWithPassword({email,password});
-  if(error)throw error;await startApp();
+  if(error)throw error;
+  await startApp();
  });
  setBusy("loginButton",false);
 }
+
 async function logout(){
  await safe(async()=>{
-  if(presenceTimer){clearInterval(presenceTimer);presenceTimer=null}
-  const {error}=await db.auth.signOut();if(error)throw error;
-  currentUser=null;currentProfile=null;wallet=null;cachedUsers=[];
-  el("app").classList.add("hidden");el("auth").classList.remove("hidden");
-  el("adminPanel").classList.add("hidden");el("headerUser").textContent="GUEST";msg("Logged out.");
+  if(presenceTimer){
+   clearInterval(presenceTimer);
+   presenceTimer=null;
+  }
+
+  const {error}=await db.auth.signOut();
+  if(error)throw error;
+
+  currentUser=null;
+  currentProfile=null;
+  wallet=null;
+  cachedUsers=[];
+
+  el("app").classList.add("hidden");
+  el("auth").classList.remove("hidden");
+  el("adminPanel").classList.add("hidden");
+  el("headerUser").textContent="GUEST";
+  msg("Logged out.");
  });
 }
+
 async function touchPresence(){
- if(!currentUser)return;const {error}=await db.rpc("royal_touch_presence");
+ if(!currentUser)return;
+ const {error}=await db.rpc("royal_touch_presence");
  if(error)console.warn("Presence update failed:",error.message);
 }
-function startPresence(){if(presenceTimer)clearInterval(presenceTimer);touchPresence();presenceTimer=setInterval(touchPresence,60000)}
-document.addEventListener("visibilitychange",()=>{if(!document.hidden)touchPresence()});
+
+function startPresence(){
+ if(presenceTimer)clearInterval(presenceTimer);
+ touchPresence();
+ presenceTimer=setInterval(touchPresence,60000);
+}
+
+document.addEventListener("visibilitychange",()=>{
+ if(!document.hidden)touchPresence();
+});
+
 async function startApp(){
  const {data:{user},error:userError}=await db.auth.getUser();
- if(userError||!user)throw userError||new Error("Login required");currentUser=user;
+ if(userError||!user)throw userError||new Error("Login required");
+ currentUser=user;
+
  const {data:profile,error}=await db.from("royal_profiles").select("*").eq("id",user.id).single();
- if(error)throw error;if(!profile)throw new Error("User profile not found.");currentProfile=profile;
- startPresence();el("auth").classList.add("hidden");el("app").classList.remove("hidden");
- el("userName").textContent=profile.full_name||user.email;el("headerUser").textContent=profile.full_name||"MEMBER";
+ if(error)throw error;
+ if(!profile)throw new Error("User profile not found.");
+ currentProfile=profile;
+
+ startPresence();
+ el("auth").classList.add("hidden");
+ el("app").classList.remove("hidden");
+
+ el("userName").textContent=profile.full_name||user.email;
+ el("headerUser").textContent=profile.full_name||"MEMBER";
  el("roleLabel").textContent=profile.role==="admin"?"ADMIN ACCESS":"MEMBER ACCESS";
- const isAdmin=profile.role==="admin";el("adminPanel").classList.toggle("hidden",!isAdmin);el("userPanel").classList.remove("hidden");
- showUserTab("homeTab");await loadWallet();await loadCategories();await loadSettings();await loadTransactions();
- if(isAdmin){await loadAdmin();showTab("dashboard")}msg("ROYAL EXCHANGE PRO loaded.");
+
+ const isAdmin=profile.role==="admin";
+ el("adminPanel").classList.toggle("hidden",!isAdmin);
+ el("userPanel").classList.remove("hidden");
+
+ showUserTab("homeTab");
+ await loadWallet();
+ await loadCategories();
+ await loadSettings();
+ await loadTransactions();
+
+ if(isAdmin){
+  await loadAdmin();
+  showTab("dashboard");
+ }
+ msg("ROYAL EXCHANGE PRO loaded.");
 }
+
 async function loadWallet(){
  const {data,error}=await db.from("royal_wallets").select("*").eq("user_id",currentUser.id).maybeSingle();
- if(error)throw error;wallet=data||{demo_balance:0,original_points:0};renderBalance();
+ if(error)throw error;
+ wallet=data||{demo_balance:0,original_points:0};
+ renderBalance();
 }
+
 function renderBalance(){
- if(!wallet)return;const mode=el("mode").value;const amount=mode==="demo"?wallet.demo_balance:wallet.original_points;
- el("balance").textContent=money(amount);el("balanceLabel").textContent=mode==="demo"?"DEMO VIRTUAL CREDITS":"ORIGINAL VIRTUAL POINTS";
+ if(!wallet)return;
+ const mode=el("mode").value;
+ const amount=mode==="demo"?wallet.demo_balance:wallet.original_points;
+ el("balance").textContent=money(amount);
+ el("balanceLabel").textContent=mode==="demo"?"DEMO VIRTUAL CREDITS":"ORIGINAL VIRTUAL POINTS";
 }
+
 async function loadCategories(){
  const {data,error}=await db.from("panel_categories").select("*").eq("is_visible",true).order("sort_order");
- if(error)throw error;el("categories").innerHTML=(data||[]).map(c=>`<span class="category">${esc(c.name)}</span>`).join("")||"No categories available.";
+ if(error)throw error;
+
+ el("categories").innerHTML=(data||[]).map(c=>`<span class="category">${esc(c.name)}</span>`).join("")||"No categories available.";
+
  if(currentProfile?.role==="admin")await renderAdminCategories();
 }
+
 async function loadSettings(){
  const {data,error}=await db.from("site_settings").select("*").eq("id",1).maybeSingle();
- if(error)throw error;if(data){el("announcement").textContent=data.announcement||"";el("announcementInput").value=data.announcement||""}
+ if(error)throw error;
+
+ if(data){
+  el("announcement").textContent=data.announcement||"";
+  el("announcementInput").value=data.announcement||"";
+ }
 }
+
 async function loadTransactions(){
  const {data,error}=await db.from("royal_wallet_transactions").select("*").eq("user_id",currentUser.id).order("created_at",{ascending:false}).limit(30);
  if(error)throw error;
- el("transactions").innerHTML=(data||[]).map(t=>`<div class="item"><b>${esc(t.account_mode)}</b> · <b class="${transactionClass(t.amount)}">${transactionType(t.amount)}</b> | <span class="${transactionClass(t.amount)}">${transactionValue(t.amount)}</span><br>${esc(t.note||"")}<br><span class="small">${t.created_at?new Date(t.created_at).toLocaleString():""}</span></div>`).join("")||"No activity yet.";
+
+ el("transactions").innerHTML=(data||[]).map(t=>`
+  <div class="item">
+   <b>${esc(t.account_mode)}</b> ·
+   <b class="${transactionClass(t.amount)}">${transactionType(t.amount)}</b> |
+   <span class="${transactionClass(t.amount)}">${transactionValue(t.amount)}</span>
+   <br>${esc(t.note||"")}
+   <br><span class="small">${t.created_at?new Date(t.created_at).toLocaleString():""}</span>
+  </div>
+ `).join("")||"No activity yet.";
 }
+
 async function loadCricket(){
  el("cricketStatus").textContent="Cricket API is not connected.";
  el("cricketMatches").textContent="Real live scores will appear after the cricket API is connected.";
 }
-async function loadAdmin(){
- if(currentProfile?.role!=="admin")return;
+
+/* ADMIN: CREATE ONE-TIME MEMBER CODE */
+async function createMemberInvite(){
  await safe(async()=>{
-  const {data:users,error}=await db.from("royal_profiles").select("id,full_name,mobile,role,created_at,last_seen").order("created_at",{ascending:false}).limit(100);
-  if(error)throw error;cachedUsers=users||[];
-  const targetSelect=el("targetUser");
-  const previousTarget=targetSelect.value;
-  targetSelect.innerHTML='<option value="">Select Member by Name</option>'+
-   cachedUsers.map(u=>`<option value="${esc(u.id)}">${esc(u.full_name||"Member")} · ${esc(u.mobile||"No mobile")}</option>`).join("");
-  if(cachedUsers.some(u=>u.id===previousTarget))targetSelect.value=previousTarget;
-  const onlineCount=cachedUsers.filter(u=>u.last_seen&&(Date.now()-new Date(u.last_seen).getTime())<120000).length;
-  el("adminStats").innerHTML="Registered users: <b>"+cachedUsers.length+"</b><br>Online now: <b class='gold'>"+onlineCount+"</b>";filterUsers();
-  const {data:tx,error:txError}=await db.from("royal_wallet_transactions").select("*").order("created_at",{ascending:false}).limit(50);
-  if(txError)throw txError;
-  el("adminTransactions").innerHTML=(tx||[]).map(t=>`<div class="item">${esc(t.account_mode)} · <b class="${transactionClass(t.amount)}">${transactionType(t.amount)}</b> | <span class="${transactionClass(t.amount)}">${transactionValue(t.amount)}</span><br>${esc(t.note||"")}<br><span class="small">Member: ${esc(cachedUsers.find(u=>u.id===t.user_id)?.full_name||"Member")}</span><br><span class="small">${t.created_at?new Date(t.created_at).toLocaleString():""}</span></div>`).join("")||"No transactions.";
+  if(currentProfile?.role!=="admin")throw new Error("Admin access required");
+
+  const full_name=el("inviteName").value.trim();
+  const mobile=el("inviteMobile").value.trim();
+
+  if(!full_name||!mobile){
+   msg("Enter member name and mobile number.");
+   return;
+  }
+
+  const {data,error}=await db.rpc("royal_create_member_invite",{
+   p_full_name:full_name,
+   p_mobile:mobile
+  });
+
+  if(error)throw error;
+
+  const row=Array.isArray(data)?data[0]:data;
+  if(!row?.invite_code)throw new Error("Invite code was not returned.");
+
+  el("inviteResult").innerHTML=
+   "Member: <b>"+esc(full_name)+"</b><br>"+
+   "One-time Member Code: <b class=\"gold\">"+esc(row.invite_code)+"</b><br>"+
+   "Share this code with the member.";
+
+  el("inviteName").value="";
+  el("inviteMobile").value="";
+
+  msg("Member invitation created. Member must register using this code.");
  });
 }
+
+async function loadAdmin(){
+ if(currentProfile?.role!=="admin")return;
+
+ await safe(async()=>{
+  const {data:users,error}=await db.from("royal_profiles")
+   .select("id,full_name,mobile,role,created_at,last_seen")
+   .order("created_at",{ascending:false})
+   .limit(100);
+
+  if(error)throw error;
+  cachedUsers=users||[];
+
+  const targetSelect=el("targetUser");
+  const previousTarget=targetSelect.value;
+
+  targetSelect.innerHTML='<option value="">Select Member by Name</option>'+
+   cachedUsers.map(u=>`<option value="${esc(u.id)}">${esc(u.full_name||"Member")} · ${esc(u.mobile||"No mobile")}</option>`).join("");
+
+  if(cachedUsers.some(u=>u.id===previousTarget))targetSelect.value=previousTarget;
+
+  const onlineCount=cachedUsers.filter(u=>u.last_seen&&(Date.now()-new Date(u.last_seen).getTime())<120000).length;
+
+  el("adminStats").innerHTML="Registered users: <b>"+cachedUsers.length+"</b><br>Online now: <b class='gold'>"+onlineCount+"</b>";
+  filterUsers();
+
+  const {data:tx,error:txError}=await db.from("royal_wallet_transactions")
+   .select("*").order("created_at",{ascending:false}).limit(50);
+
+  if(txError)throw txError;
+
+  el("adminTransactions").innerHTML=(tx||[]).map(t=>`
+   <div class="item">
+    ${esc(t.account_mode)} ·
+    <b class="${transactionClass(t.amount)}">${transactionType(t.amount)}</b> |
+    <span class="${transactionClass(t.amount)}">${transactionValue(t.amount)}</span>
+    <br>${esc(t.note||"")}
+    <br><span class="small">Member: ${esc(cachedUsers.find(u=>u.id===t.user_id)?.full_name||"Member")}</span>
+    <br><span class="small">${t.created_at?new Date(t.created_at).toLocaleString():""}</span>
+   </div>
+  `).join("")||"No transactions.";
+ });
+}
+
 function filterUsers(){
  const query=(el("userSearch")?.value||"").trim().toLowerCase();
- const filtered=cachedUsers.filter(u=>[u.full_name,u.mobile,u.id,u.role].some(v=>String(v||"").toLowerCase().includes(query)));
- el("userList").innerHTML=filtered.map(u=>`<div class="item"><b>${esc(u.full_name||"User")}</b><br>Mobile: ${esc(u.mobile||"Not provided")}<br>Role: ${esc(u.role)}<br>Status: <b class="${u.last_seen&&(Date.now()-new Date(u.last_seen).getTime())<120000?"gold":"small"}">${u.last_seen&&(Date.now()-new Date(u.last_seen).getTime())<120000?"ONLINE":"OFFLINE"}</b><br>Last seen: ${esc(u.last_seen?new Date(u.last_seen).toLocaleString():"Never")}<div class="adminAction"><button class="secondary" data-action="view-user" data-id="${esc(u.id)}">VIEW DETAILS</button><button class="secondary" data-action="copy-user" data-id="${esc(u.id)}">COPY UUID</button><button data-action="manage-user" data-id="${esc(u.id)}">MANAGE CREDITS</button></div></div>`).join("")||"No users found.";
+
+ const filtered=cachedUsers.filter(u=>
+  [u.full_name,u.mobile,u.id,u.role].some(v=>String(v||"").toLowerCase().includes(query))
+ );
+
+ el("userList").innerHTML=filtered.map(u=>`
+  <div class="item">
+   <b>${esc(u.full_name||"User")}</b><br>
+   Mobile: ${esc(u.mobile||"Not provided")}<br>
+   Role: ${esc(u.role)}<br>
+   Status: <b class="${u.last_seen&&(Date.now()-new Date(u.last_seen).getTime())<120000?"gold":"small"}">
+   ${u.last_seen&&(Date.now()-new Date(u.last_seen).getTime())<120000?"ONLINE":"OFFLINE"}</b><br>
+   Last seen: ${esc(u.last_seen?new Date(u.last_seen).toLocaleString():"Never")}
+   <div class="adminAction">
+    <button class="secondary" data-action="view-user" data-id="${esc(u.id)}">VIEW DETAILS</button>
+    <button class="secondary" data-action="copy-user" data-id="${esc(u.id)}">COPY UUID</button>
+    <button data-action="manage-user" data-id="${esc(u.id)}">MANAGE CREDITS</button>
+   </div>
+  </div>
+ `).join("")||"No users found.";
 }
+
 async function viewUserDetails(id){
- const user=cachedUsers.find(u=>u.id===id);if(!user)return;
- const panel=el("userDetails");panel.classList.remove("hidden");panel.innerHTML="<b class='gold'>Loading user details...</b>";
+ const user=cachedUsers.find(u=>u.id===id);
+ if(!user)return;
+
+ const panel=el("userDetails");
+ panel.classList.remove("hidden");
+ panel.innerHTML="<b class='gold'>Loading user details...</b>";
  panel.scrollIntoView({behavior:"smooth",block:"start"});
+
  await safe(async()=>{
   const [walletResult,txResult]=await Promise.all([
    db.from("royal_wallets").select("demo_balance,original_points").eq("user_id",id).maybeSingle(),
    db.from("royal_wallet_transactions").select("account_mode,amount,note,created_at").eq("user_id",id).order("created_at",{ascending:false}).limit(20)
   ]);
-  if(walletResult.error)throw walletResult.error;if(txResult.error)throw txResult.error;
-  const walletData=walletResult.data,tx=txResult.data||[];
+
+  if(walletResult.error)throw walletResult.error;
+  if(txResult.error)throw txResult.error;
+
+  const walletData=walletResult.data;
+  const tx=txResult.data||[];
   const online=user.last_seen&&(Date.now()-new Date(user.last_seen).getTime())<120000;
-  panel.innerHTML=`<div class="sectionTitle"><h2>User Details</h2><button class="secondary" onclick="document.getElementById('userDetails').classList.add('hidden')">CLOSE</button></div><b class="gold">${esc(user.full_name||"User")}</b><div class="small">${esc(user.role)} · ${online?"ONLINE":"OFFLINE"}</div><div class="small">Mobile: ${esc(user.mobile||"Not provided")}</div><div class="small">Email: Not available in public profile data</div><div class="small">UUID: ${esc(user.id)}</div><div class="small">Joined: ${esc(user.created_at?new Date(user.created_at).toLocaleString():"Unknown")}</div><div class="small">Last seen: ${esc(user.last_seen?new Date(user.last_seen).toLocaleString():"Never")}</div><div class="detailGrid"><div class="detailBox"><span class="small">Demo Credits</span><b>${money(walletData?.demo_balance)}</b></div><div class="detailBox"><span class="small">Original Virtual Points</span><b>${money(walletData?.original_points)}</b></div></div><h3>Transaction History (Latest 20)</h3>${tx.map(t=>`<div class="item"><b>${esc(t.account_mode)}</b> · <b class="${transactionClass(t.amount)}">${transactionType(t.amount)}</b> | <span class="${transactionClass(t.amount)}">${transactionValue(t.amount)}</span><br>${esc(t.note||"No note")}<br><span class="small">${esc(t.created_at?new Date(t.created_at).toLocaleString():"")}</span></div>`).join("")||"No transactions for this user."}`;
+
+  panel.innerHTML=`
+   <div class="sectionTitle">
+    <h2>User Details</h2>
+    <button class="secondary" onclick="document.getElementById('userDetails').classList.add('hidden')">CLOSE</button>
+   </div>
+   <b class="gold">${esc(user.full_name||"User")}</b>
+   <div class="small">${esc(user.role)} · ${online?"ONLINE":"OFFLINE"}</div>
+   <div class="small">Mobile: ${esc(user.mobile||"Not provided")}</div>
+   <div class="small">Email: Not available in public profile data</div>
+   <div class="small">UUID: ${esc(user.id)}</div>
+   <div class="small">Joined: ${esc(user.created_at?new Date(user.created_at).toLocaleString():"Unknown")}</div>
+   <div class="small">Last seen: ${esc(user.last_seen?new Date(user.last_seen).toLocaleString():"Never")}</div>
+   <div class="detailGrid">
+    <div class="detailBox"><span class="small">Demo Credits</span><b>${money(walletData?.demo_balance)}</b></div>
+    <div class="detailBox"><span class="small">Original Virtual Points</span><b>${money(walletData?.original_points)}</b></div>
+   </div>
+   <h3>Transaction History (Latest 20)</h3>
+   ${tx.map(t=>`
+    <div class="item">
+     <b>${esc(t.account_mode)}</b> ·
+     <b class="${transactionClass(t.amount)}">${transactionType(t.amount)}</b> |
+     <span class="${transactionClass(t.amount)}">${transactionValue(t.amount)}</span>
+     <br>${esc(t.note||"No note")}
+     <br><span class="small">${esc(t.created_at?new Date(t.created_at).toLocaleString():"")}</span>
+    </div>
+   `).join("")||"No transactions for this user."}
+  `;
  });
 }
+
 function copyUserId(id){
- if(navigator.clipboard?.writeText){navigator.clipboard.writeText(id).then(()=>msg("UUID copied.")).catch(()=>msg("Copy failed. UUID: "+id))}
+ if(navigator.clipboard?.writeText){
+  navigator.clipboard.writeText(id)
+   .then(()=>msg("UUID copied."))
+   .catch(()=>msg("Copy failed. UUID: "+id));
+ }
  else{msg("UUID: "+id)}
 }
-function selectCreditUser(id){el("targetUser").value=id;showTab("credits");msg("User selected.")}
+
+function selectCreditUser(id){
+ el("targetUser").value=id;
+ showTab("credits");
+ msg("User selected.");
+}
+
 async function adjustCredits(){
  await safe(async()=>{
   if(currentProfile?.role!=="admin")throw new Error("Admin access required");
+
   const userId=el("targetUser").value.trim();
   const amount=Number(el("creditAmount").value);
   const mode=el("creditMode").value;
   const note=el("creditNote").value.trim();
-  if(!userId||!Number.isFinite(amount)||amount===0){msg("Select a member and enter a valid amount.");return}
+
+  if(!userId||!Number.isFinite(amount)||amount===0){
+   msg("Select a member and enter a valid amount.");
+   return;
+  }
+
   const balanceColumn=mode==="demo"?"demo_balance":"original_points";
-  const {data:walletData,error:walletError}=await db.from("royal_wallets").select(balanceColumn).eq("user_id",userId).maybeSingle();
+
+  const {data:walletData,error:walletError}=await db.from("royal_wallets")
+   .select(balanceColumn).eq("user_id",userId).maybeSingle();
+
   if(walletError)throw walletError;
+
   const currentBalance=Number(walletData?.[balanceColumn]||0);
   const newBalance=currentBalance+amount;
-  if(newBalance<0){msg("Insufficient virtual balance. Current balance: "+money(currentBalance));return}
+
+  if(newBalance<0){
+   msg("Insufficient virtual balance. Current balance: "+money(currentBalance));
+   return;
+  }
+
   const selectedUser=cachedUsers.find(u=>u.id===userId);
   const memberName=selectedUser?.full_name||"Member";
   const action=amount>0?"CREDIT (CR)":"DEBIT (DR)";
+
   const confirmation="Confirm virtual points adjustment?\n\n"+
    "Member: "+memberName+"\n"+
    "Account: "+(mode==="demo"?"Demo Credits":"Original Virtual Points")+"\n"+
@@ -402,67 +728,143 @@ async function adjustCredits(){
    (amount>0?"Add Amount: ":"Deduct Amount: ")+money(Math.abs(amount))+"\n"+
    "New Balance: "+money(newBalance)+"\n"+
    "Transaction: "+action;
+
   if(!confirm(confirmation))return;
-  const {error}=await db.rpc("royal_adjust_wallet",{p_user_id:userId,p_mode:mode,p_amount:amount,p_note:note});
+
+  const {error}=await db.rpc("royal_adjust_wallet",{
+   p_user_id:userId,
+   p_mode:mode,
+   p_amount:amount,
+   p_note:note
+  });
+
   if(error)throw error;
+
   msg("Virtual balance updated for "+memberName+". New balance: "+money(newBalance));
   el("creditAmount").value="";
-  await loadAdmin();await loadTransactions();await loadWallet();await viewUserDetails(userId);
+
+  await loadAdmin();
+  await loadTransactions();
+  await loadWallet();
+  await viewUserDetails(userId);
  });
 }
+
 async function addCategory(){
  await safe(async()=>{
   if(currentProfile?.role!=="admin")throw new Error("Admin access required");
-  const name=el("catName").value.trim(),description=el("catDesc").value.trim();
+
+  const name=el("catName").value.trim();
+  const description=el("catDesc").value.trim();
+
   if(!name){msg("Enter category name.");return}
-  const {error}=await db.from("panel_categories").insert({name,description,is_visible:true});
-  if(error)throw error;el("catName").value="";el("catDesc").value="";msg("Category added.");await loadCategories();
+
+  const {error}=await db.from("panel_categories").insert({
+   name,description,is_visible:true
+  });
+
+  if(error)throw error;
+
+  el("catName").value="";
+  el("catDesc").value="";
+  msg("Category added.");
+  await loadCategories();
  });
 }
+
 async function toggleCategory(id,visible){
  await safe(async()=>{
   if(currentProfile?.role!=="admin")throw new Error("Admin access required");
-  const {error}=await db.from("panel_categories").update({is_visible:!visible}).eq("id",id);
-  if(error)throw error;await loadCategories();msg("Category updated.");
+
+  const {error}=await db.from("panel_categories")
+   .update({is_visible:!visible}).eq("id",id);
+
+  if(error)throw error;
+  await loadCategories();
+  msg("Category updated.");
  });
 }
+
 async function deleteCategory(id){
- if(currentProfile?.role!=="admin"){msg("Admin access required.");return}
+ if(currentProfile?.role!=="admin"){
+  msg("Admin access required.");
+  return;
+ }
+
  if(!confirm("Delete this category?"))return;
+
  await safe(async()=>{
   const {error}=await db.from("panel_categories").delete().eq("id",id);
-  if(error)throw error;await loadCategories();msg("Category deleted.");
+  if(error)throw error;
+  await loadCategories();
+  msg("Category deleted.");
  });
 }
+
 async function renderAdminCategories(){
  if(currentProfile?.role!=="admin")return;
+
  const {data,error}=await db.from("panel_categories").select("*").order("sort_order");
  if(error)throw error;
- el("adminCategories").innerHTML=(data||[]).map(c=>`<div class="item"><b>${esc(c.name)}</b><br>${c.is_visible?"Visible":"Hidden"}<div class="adminAction"><button class="secondary" data-action="toggle-category" data-id="${esc(c.id)}" data-visible="${c.is_visible}">${c.is_visible?"HIDE":"SHOW"}</button><button class="danger" data-action="delete-category" data-id="${esc(c.id)}">DELETE</button></div></div>`).join("")||"No categories.";
+
+ el("adminCategories").innerHTML=(data||[]).map(c=>`
+  <div class="item">
+   <b>${esc(c.name)}</b><br>
+   ${c.is_visible?"Visible":"Hidden"}
+   <div class="adminAction">
+    <button class="secondary" data-action="toggle-category" data-id="${esc(c.id)}" data-visible="${c.is_visible}">
+     ${c.is_visible?"HIDE":"SHOW"}
+    </button>
+    <button class="danger" data-action="delete-category" data-id="${esc(c.id)}">DELETE</button>
+   </div>
+  </div>
+ `).join("")||"No categories.";
 }
+
 async function saveAnnouncement(){
  await safe(async()=>{
   if(currentProfile?.role!=="admin")throw new Error("Admin access required");
+
   const announcement=el("announcementInput").value.trim();
-  const {error}=await db.from("site_settings").update({announcement,updated_at:new Date().toISOString()}).eq("id",1);
-  if(error)throw error;msg("Announcement saved.");await loadSettings();
+
+  const {error}=await db.from("site_settings")
+   .update({announcement,updated_at:new Date().toISOString()}).eq("id",1);
+
+  if(error)throw error;
+  msg("Announcement saved.");
+  await loadSettings();
  });
 }
+
 document.addEventListener("click",event=>{
- const button=event.target.closest("[data-action]");if(!button)return;
- const action=button.dataset.action,id=button.dataset.id;
+ const button=event.target.closest("[data-action]");
+ if(!button)return;
+
+ const action=button.dataset.action;
+ const id=button.dataset.id;
+
  if(action==="view-user")viewUserDetails(id);
  if(action==="copy-user")copyUserId(id);
  if(action==="manage-user")selectCreditUser(id);
  if(action==="toggle-category")toggleCategory(id,button.dataset.visible==="true");
  if(action==="delete-category")deleteCategory(id);
 });
-Object.assign(window,{login,register,logout,showUserTab,showTab,openGame,playGame,closeGame,loadCricket,renderBalance,adjustCredits,addCategory,saveAnnouncement,filterUsers,viewUserDetails});
+
+Object.assign(window,{
+ login,register,logout,showUserTab,showTab,openGame,playGame,closeGame,
+ loadCricket,renderBalance,adjustCredits,addCategory,saveAnnouncement,
+ filterUsers,viewUserDetails,createMemberInvite
+});
+
 (async()=>{
  try{
   const {data:{session},error}=await db.auth.getSession();
-  if(error)throw error;if(session)await startApp();
- }catch(e){console.error(e);msg("Startup error: "+e.message)}
+  if(error)throw error;
+  if(session)await startApp();
+ }catch(e){
+  console.error(e);
+  msg("Startup error: "+e.message);
+ }
 })();
 </script>
 </body>
