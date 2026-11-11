@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,6 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ROYAL EXCHANGE PRO</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <style>
 *{box-sizing:border-box}
 body{margin:0;background:#090909;color:#eee;font-family:Arial,sans-serif}
@@ -17,8 +19,8 @@ input,select{width:100%;padding:13px;margin:7px 0;background:#080808;color:white
 button{padding:12px;margin:5px 2px;background:#c49a40;color:#111;border:0;border-radius:7px;font-weight:bold;cursor:pointer}
 button.secondary{background:#292929;color:#e8bd57;border:1px solid #80652e}
 button.danger{background:#762d2d;color:white}
-.nav{display:flex;flex-wrap:wrap;gap:5px}
-.nav button{flex:1;min-width:100px}
+.nav,.userNav{display:flex;flex-wrap:wrap;gap:5px}
+.nav button,.userNav button{flex:1;min-width:100px}
 .hidden{display:none!important}
 .gold{color:#e8bd57}
 .balance{font-size:30px;color:#e8bd57;font-weight:bold}
@@ -26,8 +28,18 @@ button.danger{background:#762d2d;color:white}
 #message{padding:10px;color:#e8bd57;overflow-wrap:anywhere}
 .small{font-size:12px;color:#aaa}
 .category{display:inline-block;padding:12px;margin:5px;background:#292318;border:1px solid #a17c30;border-radius:8px}
+.userTab{display:none}
+.userTab.active{display:block}
+.gameGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.gameCard{background:#201b12;border:1px solid #80652e;border-radius:10px;padding:15px;text-align:center}
+.gameIcon{font-size:36px}
+.gameResult{font-size:23px;color:#e8bd57;font-weight:bold;margin:15px 0;overflow-wrap:anywhere}
+.hero{text-align:center;padding:25px 12px;background:linear-gradient(140deg,#211909,#101010);border:1px solid #a17c30;border-radius:12px}
+.hero h2{font-size:27px}
+footer{text-align:center;color:#777;padding:20px;font-size:12px}
 </style>
 </head>
+
 <body>
 <header>
 <h1>ROYAL EXCHANGE PRO</h1>
@@ -35,21 +47,24 @@ button.danger{background:#762d2d;color:white}
 </header>
 
 <main>
-<div id="message">Welcome</div>
+<div id="message">Welcome to Royal Exchange Pro</div>
 
 <section id="auth" class="card">
 <h2>Account Login</h2>
 <input id="email" type="email" placeholder="Email address">
 <input id="password" type="password" placeholder="Password">
+
 <div id="registerFields">
 <input id="fullName" placeholder="Full name">
 <input id="mobile" placeholder="Mobile number">
 </div>
+
 <button onclick="login()">LOGIN</button>
 <button class="secondary" onclick="register()">CREATE ACCOUNT</button>
 </section>
 
 <section id="app" class="hidden">
+
 <div class="card">
 <div id="userName" class="gold"></div>
 <div id="roleLabel"></div>
@@ -57,6 +72,96 @@ button.danger{background:#762d2d;color:white}
 </div>
 
 <section id="userPanel">
+
+<div class="userNav">
+<button onclick="showUserTab('homeTab')">HOME</button>
+<button onclick="showUserTab('gamesTab')">DEMO GAMES</button>
+<button onclick="showUserTab('cricketTab')">CRICKET</button>
+<button onclick="showUserTab('accountTab')">MY ACCOUNT</button>
+</div>
+
+<div id="homeTab" class="userTab active">
+
+<div class="hero">
+<h2>WELCOME TO ROYAL EXCHANGE PRO</h2>
+<p class="gold">ULTIMATE VIRTUAL ENTERTAINMENT PLATFORM</p>
+<p>Explore demo games, cricket updates and your account dashboard.</p>
+<button onclick="showUserTab('gamesTab')">EXPLORE GAMES</button>
+<button class="secondary" onclick="showUserTab('cricketTab')">CRICKET CENTRE</button>
+</div>
+
+<div class="card">
+<h2>QUICK ACCESS</h2>
+<div class="gameGrid">
+<div class="gameCard">
+<div class="gameIcon">🎮</div>
+<h3>Demo Games</h3>
+<button onclick="showUserTab('gamesTab')">OPEN</button>
+</div>
+<div class="gameCard">
+<div class="gameIcon">🏏</div>
+<h3>Cricket Centre</h3>
+<button onclick="showUserTab('cricketTab')">OPEN</button>
+</div>
+<div class="gameCard">
+<div class="gameIcon">👤</div>
+<h3>My Account</h3>
+<button onclick="showUserTab('accountTab')">OPEN</button>
+</div>
+</div>
+</div>
+
+</div>
+
+<div id="gamesTab" class="userTab">
+<div class="card">
+<h2>🎮 DEMO GAMES</h2>
+<p class="small">Free entertainment only. No real money, deposits, withdrawals or cash prizes. Games do not use wallet credits.</p>
+
+<div class="gameGrid">
+
+<div class="gameCard">
+<div class="gameIcon">🎰</div>
+<h3>Lucky Slots</h3>
+<button onclick="playDemo('slots')">PLAY DEMO</button>
+</div>
+
+<div class="gameCard">
+<div class="gameIcon">🎡</div>
+<h3>Royal Roulette</h3>
+<button onclick="playDemo('roulette')">PLAY DEMO</button>
+</div>
+
+<div class="gameCard">
+<div class="gameIcon">🃏</div>
+<h3>Card Table</h3>
+<button onclick="playDemo('cards')">PLAY DEMO</button>
+</div>
+
+<div class="gameCard">
+<div class="gameIcon">🎲</div>
+<h3>Dice Arena</h3>
+<button onclick="playDemo('dice')">PLAY DEMO</button>
+</div>
+
+</div>
+
+<div id="gameResult" class="gameResult">Choose a game to play.</div>
+</div>
+</div>
+
+<div id="cricketTab" class="userTab">
+<div class="card">
+<h2>🏏 CRICKET CENTRE</h2>
+<p>Live cricket scores, upcoming matches and match results.</p>
+<div id="cricketStatus" class="gold">Cricket data provider is not connected.</div>
+<div id="cricketMatches" class="item">Live cricket data will appear here after API connection.</div>
+<button onclick="loadCricket()">REFRESH CRICKET</button>
+</div>
+</div>
+
+<div id="accountTab" class="userTab">
+
 <div class="card">
 <h2>My Account</h2>
 <select id="mode" onchange="renderBalance()">
@@ -67,18 +172,23 @@ button.danger{background:#762d2d;color:white}
 <div id="balanceLabel" class="gold"></div>
 <p class="small">Virtual credits only. No real-money transactions or withdrawals.</p>
 </div>
+
 <div class="card">
 <h2>Categories</h2>
 <div id="announcement" class="gold"></div>
 <div id="categories">Loading...</div>
 </div>
+
 <div class="card">
 <h2>My Activity</h2>
 <div id="transactions">Loading...</div>
 </div>
+
+</div>
 </section>
 
 <section id="adminPanel" class="hidden">
+
 <div class="card">
 <h2>ADMIN CONTROL PANEL</h2>
 <div class="nav">
@@ -132,9 +242,12 @@ button.danger{background:#762d2d;color:white}
 <h2>Recent Virtual Transactions</h2>
 <div id="adminTransactions">Loading...</div>
 </div>
+
 </section>
 </section>
 </main>
+
+<footer>ROYAL EXCHANGE PRO | Virtual Entertainment Platform</footer>
 
 <script>
 const SUPABASE_URL="https://lsuscsonxyomusbpzxxt.supabase.co";
@@ -144,12 +257,28 @@ const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 let currentUser=null,currentProfile=null,wallet=null;
 
 const el=id=>document.getElementById(id);
-function msg(t){el("message").textContent=t}
+
+function msg(t){
+ el("message").textContent=t;
+}
+
 function esc(v){
  return String(v??"").replace(/[&<>"']/g,c=>({
- "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+ "&":"&amp;",
+ "<":"&lt;",
+ ">":"&gt;",
+ '"':"&quot;",
+ "'":"&#39;"
  })[c]);
 }
+
+function showUserTab(id){
+ document.querySelectorAll(".userTab").forEach(tab=>{
+  tab.classList.remove("active");
+ });
+ el(id).classList.add("active");
+}
+
 function showTab(id){
  document.querySelectorAll(".adminTab").forEach(x=>x.classList.add("hidden"));
  el(id).classList.remove("hidden");
@@ -158,8 +287,49 @@ function showTab(id){
 }
 
 async function safe(fn){
- try{await fn()}catch(e){msg("Error: "+(e.message||e))}
+ try{
+  await fn();
+ }catch(e){
+  msg("Error: "+(e.message||e));
+ }
 }
+
+/* DEMO GAMES */
+
+function playDemo(game){
+ const result=el("gameResult");
+ const random=max=>Math.floor(Math.random()*max);
+
+ if(game==="slots"){
+  const symbols=["🍒","🍋","⭐","💎","👑"];
+  result.textContent=
+   symbols[random(5)]+"  "+
+   symbols[random(5)]+"  "+
+   symbols[random(5)];
+ }
+ else if(game==="roulette"){
+  const number=random(37);
+  result.textContent="Roulette Result: "+number+
+   (number===0?" GREEN":number%2===0?" EVEN":" ODD");
+ }
+ else if(game==="cards"){
+  const cards=["A♠","K♥","Q♦","J♣","10♠","9♥"];
+  result.textContent="Your Card: "+cards[random(cards.length)];
+ }
+ else if(game==="dice"){
+  result.textContent="Dice Result: "+(random(6)+1);
+ }
+}
+
+/* CRICKET */
+
+async function loadCricket(){
+ el("cricketStatus").textContent="Cricket API not connected.";
+ el("cricketMatches").textContent=
+  "No live match data available yet. Connect a cricket API to show real scores.";
+}
+
+/* AUTHENTICATION */
 
 async function register(){
  await safe(async()=>{
@@ -167,13 +337,25 @@ async function register(){
   const password=el("password").value;
   const full_name=el("fullName").value.trim();
   const mobile=el("mobile").value.trim();
-  if(!email||password.length<6){msg("Email aur minimum 6 character password daalein.");return}
+
+  if(!email||password.length<6){
+   msg("Email aur minimum 6 character password daalein.");
+   return;
+  }
+
   const {data,error}=await db.auth.signUp({
-   email,password,options:{data:{full_name,mobile}}
+   email,
+   password,
+   options:{data:{full_name,mobile}}
   });
+
   if(error)throw error;
-  if(data.session)await startApp();
-  else msg("Registration successful. Email verification ke baad login karein.");
+
+  if(data.session){
+   await startApp();
+  }else{
+   msg("Registration successful. Email verification ke baad login karein.");
+  }
  });
 }
 
@@ -181,38 +363,62 @@ async function login(){
  await safe(async()=>{
   const email=el("email").value.trim();
   const password=el("password").value;
-  if(!email||!password){msg("Email aur password daalein.");return}
+
+  if(!email||!password){
+   msg("Email aur password daalein.");
+   return;
+  }
+
   const {error}=await db.auth.signInWithPassword({email,password});
+
   if(error)throw error;
+
   await startApp();
  });
 }
 
 async function logout(){
  await db.auth.signOut();
- currentUser=null;currentProfile=null;wallet=null;
+
+ currentUser=null;
+ currentProfile=null;
+ wallet=null;
+
  el("app").classList.add("hidden");
  el("auth").classList.remove("hidden");
+
  msg("Logged out.");
 }
 
+/* START APP */
+
 async function startApp(){
  const {data:{user},error:userError}=await db.auth.getUser();
- if(userError||!user)throw userError||new Error("Login required");
+
+ if(userError||!user){
+  throw userError||new Error("Login required");
+ }
+
  currentUser=user;
 
  const {data:profile,error}=await db.from("royal_profiles")
   .select("*").eq("id",user.id).single();
+
  if(error)throw error;
 
  currentProfile=profile;
+
  el("auth").classList.add("hidden");
  el("app").classList.remove("hidden");
+
  el("userName").textContent=profile.full_name||user.email;
- el("roleLabel").textContent=profile.role==="admin"?"ADMIN ACCESS":"USER ACCESS";
+ el("roleLabel").textContent=
+  profile.role==="admin"?"ADMIN ACCESS":"USER ACCESS";
 
  el("adminPanel").classList.toggle("hidden",profile.role!=="admin");
  el("userPanel").classList.remove("hidden");
+
+ showUserTab("homeTab");
 
  await loadWallet();
  await loadCategories();
@@ -223,131 +429,205 @@ async function startApp(){
   await loadAdmin();
   showTab("dashboard");
  }
+
  msg("ROYAL EXCHANGE PRO loaded.");
 }
+
+/* WALLET */
 
 async function loadWallet(){
  const {data,error}=await db.from("royal_wallets")
   .select("*").eq("user_id",currentUser.id).maybeSingle();
+
  if(error)throw error;
+
  wallet=data||{demo_balance:0,original_points:0};
  renderBalance();
 }
 
 function renderBalance(){
  if(!wallet)return;
+
  const mode=el("mode").value;
- const amount=mode==="demo"?wallet.demo_balance:wallet.original_points;
+ const amount=mode==="demo"
+  ?wallet.demo_balance
+  :wallet.original_points;
+
  el("balance").textContent=Number(amount||0).toFixed(2);
- el("balanceLabel").textContent=mode==="demo"?"DEMO VIRTUAL CREDITS":"ORIGINAL VIRTUAL POINTS";
+
+ el("balanceLabel").textContent=
+  mode==="demo"?"DEMO VIRTUAL CREDITS":"ORIGINAL VIRTUAL POINTS";
 }
+
+/* CATEGORIES */
 
 async function loadCategories(){
  const {data,error}=await db.from("panel_categories")
   .select("*").eq("is_visible",true).order("sort_order");
+
  if(error)throw error;
+
  el("categories").innerHTML=(data||[]).map(c=>
   `<span class="category">${esc(c.name)}</span>`
  ).join("")||"No categories available.";
- if(currentProfile.role==="admin")await renderAdminCategories();
+
+ if(currentProfile.role==="admin"){
+  await renderAdminCategories();
+ }
 }
+
+/* SETTINGS */
 
 async function loadSettings(){
  const {data,error}=await db.from("site_settings")
   .select("*").eq("id",1).maybeSingle();
+
  if(error)throw error;
+
  if(data){
   el("announcement").textContent=data.announcement||"";
   el("announcementInput").value=data.announcement||"";
  }
 }
 
+/* USER TRANSACTIONS */
+
 async function loadTransactions(){
  const {data,error}=await db.from("royal_wallet_transactions")
   .select("*").eq("user_id",currentUser.id)
   .order("created_at",{ascending:false}).limit(30);
+
  if(error)throw error;
+
  el("transactions").innerHTML=(data||[]).map(t=>
-  `<div class="item"><b>${esc(t.account_mode)}</b> | ${Number(t.amount).toFixed(2)}
-  <br>${esc(t.note||"")}<br><span class="small">${new Date(t.created_at).toLocaleString()}</span></div>`
+  `<div class="item">
+   <b>${esc(t.account_mode)}</b> | ${Number(t.amount).toFixed(2)}
+   <br>${esc(t.note||"")}
+   <br><span class="small">${new Date(t.created_at).toLocaleString()}</span>
+  </div>`
  ).join("")||"No activity yet.";
 }
 
+/* ADMIN */
+
 async function loadAdmin(){
  if(currentProfile?.role!=="admin")return;
+
  await safe(async()=>{
   const {data:users,error}=await db.from("royal_profiles")
    .select("id,full_name,mobile,role,created_at")
    .order("created_at",{ascending:false}).limit(100);
+
   if(error)throw error;
 
   el("adminStats").textContent="Registered users: "+users.length;
 
   el("userList").innerHTML=(users||[]).map(u=>
    `<div class="item">
-   <b>${esc(u.full_name||"User")}</b>
-   <br>Email/mobile: ${esc(u.mobile||"Not provided")}
-   <br>Role: ${esc(u.role)}
-   <br><span class="small">UUID: ${esc(u.id)}</span>
-   <br><button class="secondary" onclick="copyUserId('${u.id}')">COPY UUID</button>
-   <button onclick="selectCreditUser('${u.id}')">MANAGE CREDITS</button>
+    <b>${esc(u.full_name||"User")}</b>
+    <br>Email/mobile: ${esc(u.mobile||"Not provided")}
+    <br>Role: ${esc(u.role)}
+    <br><span class="small">UUID: ${esc(u.id)}</span>
+    <br><button class="secondary" onclick="copyUserId('${u.id}')">COPY UUID</button>
+    <button onclick="selectCreditUser('${u.id}')">MANAGE CREDITS</button>
    </div>`
   ).join("")||"No users found.";
 
   const {data:tx,error:txError}=await db.from("royal_wallet_transactions")
    .select("*").order("created_at",{ascending:false}).limit(50);
+
   if(txError)throw txError;
+
   el("adminTransactions").innerHTML=(tx||[]).map(t=>
-   `<div class="item">${esc(t.account_mode)} | ${Number(t.amount).toFixed(2)}
-   <br>${esc(t.note||"")}
-   <br><span class="small">User: ${esc(t.user_id)}</span></div>`
+   `<div class="item">
+    ${esc(t.account_mode)} | ${Number(t.amount).toFixed(2)}
+    <br>${esc(t.note||"")}
+    <br><span class="small">User: ${esc(t.user_id)}</span>
+   </div>`
   ).join("")||"No transactions.";
  });
 }
 
 function copyUserId(id){
  if(navigator.clipboard?.writeText){
-  navigator.clipboard.writeText(id).then(()=>msg("UUID copied.")).catch(()=>msg("UUID: "+id));
- }else msg("UUID: "+id);
+  navigator.clipboard.writeText(id)
+   .then(()=>msg("UUID copied."))
+   .catch(()=>msg("UUID: "+id));
+ }else{
+  msg("UUID: "+id);
+ }
 }
+
 function selectCreditUser(id){
  el("targetUser").value=id;
  showTab("credits");
  msg("User selected. Ab virtual credits update karein.");
 }
 
+/* VIRTUAL CREDITS */
+
 async function adjustCredits(){
  await safe(async()=>{
-  if(currentProfile?.role!=="admin")throw new Error("Admin access required");
+  if(currentProfile?.role!=="admin"){
+   throw new Error("Admin access required");
+  }
+
   const userId=el("targetUser").value.trim();
   const amount=Number(el("creditAmount").value);
   const mode=el("creditMode").value;
   const note=el("creditNote").value.trim();
+
   if(!userId||!Number.isFinite(amount)||amount===0){
-   msg("User UUID aur valid amount daalein.");return;
+   msg("User UUID aur valid amount daalein.");
+   return;
   }
+
   const {error}=await db.rpc("royal_adjust_wallet",{
-   p_user_id:userId,p_mode:mode,p_amount:amount,p_note:note
+   p_user_id:userId,
+   p_mode:mode,
+   p_amount:amount,
+   p_note:note
   });
+
   if(error)throw error;
+
   msg("Virtual balance updated.");
+
   el("creditAmount").value="";
+
   await loadAdmin();
   await loadTransactions();
+  await loadWallet();
  });
 }
 
+/* CATEGORY MANAGEMENT */
+
 async function addCategory(){
  await safe(async()=>{
-  if(currentProfile?.role!=="admin")throw new Error("Admin access required");
+  if(currentProfile?.role!=="admin"){
+   throw new Error("Admin access required");
+  }
+
   const name=el("catName").value.trim();
   const description=el("catDesc").value.trim();
-  if(!name){msg("Category name daalein.");return}
+
+  if(!name){
+   msg("Category name daalein.");
+   return;
+  }
+
   const {error}=await db.from("panel_categories").insert({
-   name,description,is_visible:true
+   name,
+   description,
+   is_visible:true
   });
+
   if(error)throw error;
-  el("catName").value="";el("catDesc").value="";
+
+  el("catName").value="";
+  el("catDesc").value="";
+
   msg("Category added.");
   await loadCategories();
  });
@@ -357,16 +637,22 @@ async function toggleCategory(id,visible){
  await safe(async()=>{
   const {error}=await db.from("panel_categories")
    .update({is_visible:!visible}).eq("id",id);
+
   if(error)throw error;
+
   await loadCategories();
  });
 }
 
 async function deleteCategory(id){
  if(!confirm("Delete this category?"))return;
+
  await safe(async()=>{
-  const {error}=await db.from("panel_categories").delete().eq("id",id);
+  const {error}=await db.from("panel_categories")
+   .delete().eq("id",id);
+
   if(error)throw error;
+
   await loadCategories();
  });
 }
@@ -374,32 +660,52 @@ async function deleteCategory(id){
 async function renderAdminCategories(){
  const {data,error}=await db.from("panel_categories")
   .select("*").order("sort_order");
+
  if(error)throw error;
+
  el("adminCategories").innerHTML=(data||[]).map(c=>
-  `<div class="item"><b>${esc(c.name)}</b>
-  <br>${c.is_visible?"Visible":"Hidden"}
-  <button class="secondary" onclick="toggleCategory(${c.id},${c.is_visible})">${c.is_visible?"HIDE":"SHOW"}</button>
-  <button class="danger" onclick="deleteCategory(${c.id})">DELETE</button></div>`
+  `<div class="item">
+   <b>${esc(c.name)}</b>
+   <br>${c.is_visible?"Visible":"Hidden"}
+   <button class="secondary" onclick="toggleCategory(${c.id},${c.is_visible})">${c.is_visible?"HIDE":"SHOW"}</button>
+   <button class="danger" onclick="deleteCategory(${c.id})">DELETE</button>
+  </div>`
  ).join("")||"No categories.";
 }
 
+/* ANNOUNCEMENT */
+
 async function saveAnnouncement(){
  await safe(async()=>{
-  if(currentProfile?.role!=="admin")throw new Error("Admin access required");
+  if(currentProfile?.role!=="admin"){
+   throw new Error("Admin access required");
+  }
+
   const announcement=el("announcementInput").value.trim();
+
   const {error}=await db.from("site_settings")
-   .update({announcement,updated_at:new Date().toISOString()})
+   .update({
+    announcement,
+    updated_at:new Date().toISOString()
+   })
    .eq("id",1);
+
   if(error)throw error;
+
   msg("Announcement saved.");
   await loadSettings();
  });
 }
 
+/* GLOBAL FUNCTIONS */
+
 window.login=login;
 window.register=register;
 window.logout=logout;
 window.showTab=showTab;
+window.showUserTab=showUserTab;
+window.playDemo=playDemo;
+window.loadCricket=loadCricket;
 window.adjustCredits=adjustCredits;
 window.addCategory=addCategory;
 window.toggleCategory=toggleCategory;
@@ -408,11 +714,18 @@ window.saveAnnouncement=saveAnnouncement;
 window.copyUserId=copyUserId;
 window.selectCreditUser=selectCreditUser;
 
+/* AUTO LOGIN */
+
 (async()=>{
  try{
   const {data:{session}}=await db.auth.getSession();
-  if(session)await startApp();
- }catch(e){msg("Startup error: "+e.message)}
+
+  if(session){
+   await startApp();
+  }
+ }catch(e){
+  msg("Startup error: "+e.message);
+ }
 })();
 </script>
 </body>
